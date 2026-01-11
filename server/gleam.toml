@@ -1,0 +1,17 @@
+# SPDX-License-Identifier: AGPL-3.0-or-later
+
+name = "formbase_server"
+version = "0.1.0"
+description = "FormBase API server"
+licences = ["AGPL-3.0-or-later"]
+repository = { type = "github", user = "hyperpolymath", repo = "formbase" }
+
+[dependencies]
+gleam_stdlib = ">= 0.34.0 and < 2.0.0"
+gleam_http = ">= 3.6.0 and < 4.0.0"
+gleam_json = ">= 1.0.0 and < 2.0.0"
+mist = ">= 1.0.0 and < 2.0.0"
+wisp = ">= 0.14.0 and < 1.0.0"
+
+[dev-dependencies]
+gleeunit = ">= 1.0.0 and < 2.0.0"
