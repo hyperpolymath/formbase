@@ -306,9 +306,42 @@ module Row = {
     ~onEditChange: string => unit,
     ~onSaveEdit: unit => unit,
     ~onCancelEdit: unit => unit,
+    ~onDeleteRow: string => unit,
   ) => {
+    let (showDeleteConfirm, setShowDeleteConfirm) = React.useState(() => false)
+
     <div className="grid-row" role="row">
-      <div className="grid-row-number"> {React.string(Int.toString(rowIndex + 1))} </div>
+      <div className="grid-row-number">
+        {if showDeleteConfirm {
+          <div className="delete-confirm">
+            <button
+              className="delete-confirm-yes"
+              onClick={_ => {
+                onDeleteRow(row.id)
+                setShowDeleteConfirm(_ => false)
+              }}
+              title="Confirm delete">
+              {React.string("Y")}
+            </button>
+            <button
+              className="delete-confirm-no"
+              onClick={_ => setShowDeleteConfirm(_ => false)}
+              title="Cancel">
+              {React.string("N")}
+            </button>
+          </div>
+        } else {
+          <>
+            <span className="row-number-text"> {React.string(Int.toString(rowIndex + 1))} </span>
+            <button
+              className="delete-row-button"
+              onClick={_ => setShowDeleteConfirm(_ => true)}
+              title="Delete row">
+              {React.string("x")}
+            </button>
+          </>
+        }}
+      </div>
       {fields
       ->Array.mapWithIndex((field, _fieldIndex) => {
         let isEditing =
@@ -338,6 +371,7 @@ let make = (
   ~rows: array<row>,
   ~onCellUpdate: (string, string, cellValue) => unit,
   ~onAddRow: unit => unit,
+  ~onDeleteRow: string => unit,
 ) => {
   let (editingCell, setEditingCell) = Jotai.useAtom(GridStore.editingCellAtom)
   let (editValue, setEditValue) = Jotai.useAtom(GridStore.editValueAtom)
@@ -504,6 +538,7 @@ let make = (
           onEditChange={handleEditChange}
           onSaveEdit={handleSaveEdit}
           onCancelEdit={handleCancelEdit}
+          onDeleteRow
         />
       })
       ->React.array}

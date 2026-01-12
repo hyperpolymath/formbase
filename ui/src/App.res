@@ -205,6 +205,20 @@ let make = () => {
     })
   }
 
+  // Handle deleting a row
+  let handleDeleteRow = (rowId: string) => {
+    // Optimistic update - remove from local state first
+    setRows(prevRows => prevRows->Array.filter(row => row.id != rowId))
+
+    // Sync with backend via API
+    let _ = Client.deleteRow("base_demo", demoTable.id, rowId)->Promise.thenResolve(result => {
+      switch result {
+      | Ok(_) => Console.log2("Row deleted successfully:", rowId)
+      | Error(err) => Console.error2("Failed to delete row:", err.message)
+      }
+    })
+  }
+
   <Jotai.Provider>
     <div className="formbase-app">
       <header className="formbase-header">
@@ -216,7 +230,7 @@ let make = () => {
         <div style={{display: "flex", flexDirection: "column", flex: "1"}}>
           <ViewTabs />
           <Toolbar />
-          <Grid table={demoTable} rows={rows} onCellUpdate={handleCellUpdate} onAddRow={handleAddRow} />
+          <Grid table={demoTable} rows={rows} onCellUpdate={handleCellUpdate} onAddRow={handleAddRow} onDeleteRow={handleDeleteRow} />
         </div>
       </main>
     </div>

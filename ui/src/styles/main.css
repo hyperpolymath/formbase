@@ -140,6 +140,87 @@ body {
   font-weight: 600;
 }
 
+/* Row Number with Delete Button */
+.grid-row-number {
+  position: relative;
+}
+
+.row-number-text {
+  transition: opacity 0.15s;
+}
+
+.delete-row-button {
+  position: absolute;
+  display: none;
+  width: 20px;
+  height: 20px;
+  padding: 0;
+  border: none;
+  border-radius: 4px;
+  background: transparent;
+  color: var(--color-text-secondary);
+  cursor: pointer;
+  font-size: 14px;
+  font-weight: bold;
+  line-height: 1;
+  transition: all 0.15s;
+}
+
+.grid-row:hover .delete-row-button {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.grid-row:hover .row-number-text {
+  opacity: 0;
+}
+
+.delete-row-button:hover {
+  background: #ffebee;
+  color: #f44336;
+}
+
+/* Delete Confirmation */
+.delete-confirm {
+  display: flex;
+  gap: 4px;
+}
+
+.delete-confirm-yes,
+.delete-confirm-no {
+  width: 20px;
+  height: 20px;
+  padding: 0;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 11px;
+  font-weight: bold;
+  line-height: 1;
+  transition: all 0.15s;
+}
+
+.delete-confirm-yes {
+  background: #ffebee;
+  color: #f44336;
+}
+
+.delete-confirm-yes:hover {
+  background: #f44336;
+  color: white;
+}
+
+.delete-confirm-no {
+  background: #e8f5e9;
+  color: #4caf50;
+}
+
+.delete-confirm-no:hover {
+  background: #4caf50;
+  color: white;
+}
+
 .grid-header-cell {
   height: var(--header-height);
   display: flex;
