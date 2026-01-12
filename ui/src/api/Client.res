@@ -93,11 +93,15 @@ let getRows = async (baseId: string, tableId: string, ~filter: option<string>=?,
   await fetchJson(~method="GET", ~path=queryPath, ())
 }
 
-let createRow = async (baseId: string, tableId: string, cells: Dict.t<JSON.t>) => {
+let createRow = async (baseId: string, tableId: string, rowId: string, cells: Dict.t<JSON.t>) => {
+  let body = Dict.fromArray([
+    ("id", JSON.Encode.string(rowId)),
+    ("cells", JSON.Encode.object(cells)),
+  ])
   await fetchJson(
     ~method="POST",
     ~path="/bases/" ++ baseId ++ "/tables/" ++ tableId ++ "/rows",
-    ~body=JSON.Encode.object(cells),
+    ~body=JSON.Encode.object(body),
     (),
   )
 }

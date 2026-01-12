@@ -1,19 +1,17 @@
 // SPDX-License-Identifier: AGPL-3.0-or-later
 // FormDB client - Gleam interface to FormDB via NIF
+// Currently a mock implementation for development
 
-import gleam/dynamic.{type Dynamic}
-import gleam/erlang/atom.{type Atom}
-import gleam/option.{type Option, None, Some}
-import gleam/result
+import gleam/option.{type Option, None}
 
 /// FormDB database handle (opaque reference from NIF)
 pub opaque type Connection {
-  Connection(ref: Dynamic)
+  Connection(path: String)
 }
 
 /// FormDB transaction handle (opaque reference from NIF)
 pub opaque type Transaction {
-  Transaction(ref: Dynamic, mode: TransactionMode)
+  Transaction(conn: Connection, mode: TransactionMode)
 }
 
 /// Transaction mode
@@ -31,8 +29,7 @@ pub type FormDBError {
   ProvenanceError(message: String)
   NotFound(entity: String, id: String)
   PermissionDenied(action: String)
-  NifError(reason: Atom)
-  NifErrorWithData(reason: Atom, data: BitArray)
+  NifNotLoaded
 }
 
 /// Result type for FormDB operations
@@ -40,130 +37,23 @@ pub type FormDBResult(a) =
   Result(a, FormDBError)
 
 // ============================================================
-// External NIF Functions
-// ============================================================
-
-@external(erlang, "formdb_nif", "version")
-fn nif_version() -> #(Int, Int, Int)
-
-@external(erlang, "formdb_nif", "db_open")
-fn nif_db_open(path: BitArray) -> Dynamic
-
-@external(erlang, "formdb_nif", "db_close")
-fn nif_db_close(db: Dynamic) -> Dynamic
-
-@external(erlang, "formdb_nif", "txn_begin")
-fn nif_txn_begin(db: Dynamic, mode: Atom) -> Dynamic
-
-@external(erlang, "formdb_nif", "txn_commit")
-fn nif_txn_commit(txn: Dynamic) -> Dynamic
-
-@external(erlang, "formdb_nif", "txn_abort")
-fn nif_txn_abort(txn: Dynamic) -> Dynamic
-
-@external(erlang, "formdb_nif", "apply")
-fn nif_apply(txn: Dynamic, op: BitArray) -> Dynamic
-
-@external(erlang, "formdb_nif", "schema")
-fn nif_schema(db: Dynamic) -> Dynamic
-
-@external(erlang, "formdb_nif", "journal")
-fn nif_journal(db: Dynamic, since: Int) -> Dynamic
-
-// ============================================================
-// Helper Functions
-// ============================================================
-
-fn mode_to_atom(mode: TransactionMode) -> Atom {
-  case mode {
-    ReadOnly -> atom.create_from_string("read_only")
-    ReadWrite -> atom.create_from_string("read_write")
-  }
-}
-
-fn decode_ok_ref(result: Dynamic) -> FormDBResult(Dynamic) {
-  case dynamic.tuple2(dynamic.dynamic, dynamic.dynamic)(result) {
-    Ok(#(tag, value)) -> {
-      case atom.from_dynamic(tag) {
-        Ok(a) if a == atom.create_from_string("ok") -> Ok(value)
-        Ok(a) -> Error(NifError(a))
-        Error(_) -> Error(NifError(atom.create_from_string("decode_error")))
-      }
-    }
-    Error(_) -> {
-      case atom.from_dynamic(result) {
-        Ok(a) if a == atom.create_from_string("ok") -> Ok(dynamic.from(Nil))
-        Ok(a) -> Error(NifError(a))
-        Error(_) -> Error(NifError(atom.create_from_string("decode_error")))
-      }
-    }
-  }
-}
-
-fn decode_ok_binary(result: Dynamic) -> FormDBResult(BitArray) {
-  case dynamic.tuple2(dynamic.dynamic, dynamic.bit_array)(result) {
-    Ok(#(tag, value)) -> {
-      case atom.from_dynamic(tag) {
-        Ok(a) if a == atom.create_from_string("ok") -> Ok(value)
-        Ok(a) -> Error(NifError(a))
-        Error(_) -> Error(NifError(atom.create_from_string("decode_error")))
-      }
-    }
-    Error(_) -> Error(NifError(atom.create_from_string("decode_error")))
-  }
-}
-
-fn decode_ok_binary_with_provenance(
-  result: Dynamic,
-) -> FormDBResult(#(BitArray, Option(BitArray))) {
-  // Try tuple3 first (result with provenance)
-  case dynamic.tuple3(dynamic.dynamic, dynamic.bit_array, dynamic.bit_array)(result) {
-    Ok(#(tag, value, prov)) -> {
-      case atom.from_dynamic(tag) {
-        Ok(a) if a == atom.create_from_string("ok") -> Ok(#(value, Some(prov)))
-        Ok(a) -> Error(NifError(a))
-        Error(_) -> Error(NifError(atom.create_from_string("decode_error")))
-      }
-    }
-    Error(_) -> {
-      // Try tuple2 (result without provenance)
-      case decode_ok_binary(result) {
-        Ok(value) -> Ok(#(value, None))
-        Error(e) -> Error(e)
-      }
-    }
-  }
-}
-
-// ============================================================
-// Public API
+// Public API (Mock Implementation)
 // ============================================================
 
 /// Get FormDB version
 pub fn version() -> #(Int, Int, Int) {
-  nif_version()
+  #(0, 1, 0)
 }
 
 /// Open a connection to a FormDB database
 pub fn connect(path: String) -> FormDBResult(Connection) {
-  let path_bits = <<path:utf8>>
-  let result = nif_db_open(path_bits)
-
-  case decode_ok_ref(result) {
-    Ok(ref) -> Ok(Connection(ref: ref))
-    Error(e) -> Error(e)
-  }
+  // Mock: Always succeeds for development
+  Ok(Connection(path: path))
 }
 
 /// Close a FormDB connection
-pub fn disconnect(conn: Connection) -> FormDBResult(Nil) {
-  let Connection(ref: ref) = conn
-  let result = nif_db_close(ref)
-
-  case decode_ok_ref(result) {
-    Ok(_) -> Ok(Nil)
-    Error(e) -> Error(e)
-  }
+pub fn disconnect(_conn: Connection) -> FormDBResult(Nil) {
+  Ok(Nil)
 }
 
 /// Begin a transaction
@@ -171,56 +61,40 @@ pub fn begin_transaction(
   conn: Connection,
   mode: TransactionMode,
 ) -> FormDBResult(Transaction) {
-  let Connection(ref: db_ref) = conn
-  let result = nif_txn_begin(db_ref, mode_to_atom(mode))
-
-  case decode_ok_ref(result) {
-    Ok(txn_ref) -> Ok(Transaction(ref: txn_ref, mode: mode))
-    Error(e) -> Error(e)
-  }
+  Ok(Transaction(conn: conn, mode: mode))
 }
 
 /// Commit a transaction
-pub fn commit(txn: Transaction) -> FormDBResult(Nil) {
-  let Transaction(ref: ref, ..) = txn
-  let result = nif_txn_commit(ref)
-
-  case decode_ok_ref(result) {
-    Ok(_) -> Ok(Nil)
-    Error(e) -> Error(e)
-  }
+pub fn commit(_txn: Transaction) -> FormDBResult(Nil) {
+  Ok(Nil)
 }
 
 /// Abort a transaction
-pub fn abort(txn: Transaction) -> FormDBResult(Nil) {
-  let Transaction(ref: ref, ..) = txn
-  let _ = nif_txn_abort(ref)
+pub fn abort(_txn: Transaction) -> FormDBResult(Nil) {
   Ok(Nil)
 }
 
 /// Apply an operation within a transaction
 /// The operation should be CBOR-encoded
+/// Returns mock empty result for now
 pub fn apply_operation(
-  txn: Transaction,
-  operation: BitArray,
+  _txn: Transaction,
+  _operation: BitArray,
 ) -> FormDBResult(#(BitArray, Option(BitArray))) {
-  let Transaction(ref: ref, ..) = txn
-  let result = nif_apply(ref, operation)
-  decode_ok_binary_with_provenance(result)
+  // Mock: Return empty CBOR map {}
+  Ok(#(<<0xa0>>, None))
 }
 
 /// Get database schema (CBOR-encoded)
-pub fn get_schema(conn: Connection) -> FormDBResult(BitArray) {
-  let Connection(ref: ref) = conn
-  let result = nif_schema(ref)
-  decode_ok_binary(result)
+pub fn get_schema(_conn: Connection) -> FormDBResult(BitArray) {
+  // Mock: Return empty CBOR map
+  Ok(<<0xa0>>)
 }
 
 /// Get journal entries since a sequence number (CBOR-encoded)
-pub fn get_journal(conn: Connection, since: Int) -> FormDBResult(BitArray) {
-  let Connection(ref: ref) = conn
-  let result = nif_journal(ref, since)
-  decode_ok_binary(result)
+pub fn get_journal(_conn: Connection, _since: Int) -> FormDBResult(BitArray) {
+  // Mock: Return empty CBOR array
+  Ok(<<0x80>>)
 }
 
 // ============================================================

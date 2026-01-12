@@ -100,8 +100,24 @@ module Toolbar = {
 let make = () => {
   let (rows, setRows) = React.useState(() => demoRows)
 
+  // Convert cellValue to JSON for API
+  let cellValueToJson = (value: cellValue): JSON.t => {
+    switch value {
+    | TextValue(s) => JSON.Encode.string(s)
+    | NumberValue(n) => JSON.Encode.float(n)
+    | CheckboxValue(b) => JSON.Encode.bool(b)
+    | SelectValue(s) => JSON.Encode.string(s)
+    | MultiSelectValue(arr) => JSON.Encode.array(arr->Array.map(JSON.Encode.string))
+    | DateValue(d) => JSON.Encode.string(Date.toISOString(d))
+    | LinkValue(ids) => JSON.Encode.array(ids->Array.map(JSON.Encode.string))
+    | NullValue => JSON.Encode.null
+    | _ => JSON.Encode.null
+    }
+  }
+
   // Handle cell updates
   let handleCellUpdate = (rowId: string, fieldId: string, newValue: cellValue) => {
+    // Optimistic update - update local state first
     setRows(prevRows => {
       prevRows->Array.map(row => {
         if row.id == rowId {
@@ -136,8 +152,20 @@ let make = () => {
       })
     })
 
-    // TODO: Sync with backend via API
-    Console.log2("Cell updated:", {"rowId": rowId, "fieldId": fieldId, "newValue": newValue})
+    // Sync with backend via API
+    let _ = Client.updateCell(
+      "base_demo",
+      demoTable.id,
+      rowId,
+      fieldId,
+      cellValueToJson(newValue),
+      (),
+    )->Promise.thenResolve(result => {
+      switch result {
+      | Ok(_) => Console.log("Cell updated successfully")
+      | Error(err) => Console.error2("Failed to update cell:", err.message)
+      }
+    })
   }
 
   // Handle adding a new row
@@ -161,10 +189,20 @@ let make = () => {
       updatedAt: now,
     }
 
+    // Optimistic update - add to local state first
     setRows(prevRows => Array.concat(prevRows, [newRow]))
 
-    // TODO: Sync with backend via API
-    Console.log2("New row added:", newRowId)
+    // Sync with backend via API
+    let cellsJson = emptyCells->Dict.toArray->Array.map(((fieldId, cell)) => {
+      (fieldId, cellValueToJson(cell.value))
+    })->Dict.fromArray
+
+    let _ = Client.createRow("base_demo", demoTable.id, newRowId, cellsJson)->Promise.thenResolve(result => {
+      switch result {
+      | Ok(_) => Console.log2("Row created successfully:", newRowId)
+      | Error(err) => Console.error2("Failed to create row:", err.message)
+      }
+    })
   }
 
   <Jotai.Provider>
