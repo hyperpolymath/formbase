@@ -342,7 +342,12 @@ module HeaderCell = {
     ~width: int,
     ~sortConfig: option<GridStore.sortConfig>,
     ~onSort: string => unit,
+    ~onResize: (string, int) => unit,
   ) => {
+    let (isResizing, setIsResizing) = React.useState(() => false)
+    let startXRef = React.useRef(0)
+    let startWidthRef = React.useRef(width)
+
     let icon = switch field.fieldType {
     | Text => "Aa"
     | Number => "#"
@@ -370,6 +375,42 @@ module HeaderCell = {
     | None => ""
     }
 
+    // Handle resize drag
+    React.useEffect1(() => {
+      if isResizing {
+        let handleMouseMove = (e: Dom.mouseEvent) => {
+          let clientX = e->Obj.magic->Dict.get("clientX")->Option.getOr(0.0)->Float.toInt
+          let delta = clientX - startXRef.current
+          let calculatedWidth = startWidthRef.current + delta
+          let newWidth = if calculatedWidth < 50 { 50 } else { calculatedWidth }
+          onResize(field.id, newWidth)
+        }
+
+        let handleMouseUp = (_: Dom.mouseEvent) => {
+          setIsResizing(_ => false)
+        }
+
+        let doc = Webapi.Dom.document
+        doc->Webapi.Dom.Document.addMouseMoveEventListener(handleMouseMove)
+        doc->Webapi.Dom.Document.addMouseUpEventListener(handleMouseUp)
+
+        Some(() => {
+          doc->Webapi.Dom.Document.removeMouseMoveEventListener(handleMouseMove)
+          doc->Webapi.Dom.Document.removeMouseUpEventListener(handleMouseUp)
+        })
+      } else {
+        None
+      }
+    }, [isResizing])
+
+    let handleResizeStart = (e: ReactEvent.Mouse.t) => {
+      ReactEvent.Mouse.stopPropagation(e)
+      ReactEvent.Mouse.preventDefault(e)
+      startXRef.current = ReactEvent.Mouse.clientX(e)
+      startWidthRef.current = width
+      setIsResizing(_ => true)
+    }
+
     <div
       className={"grid-header-cell" ++ (isSorted ? " sorted" : "")}
       style={{width: Int.toString(width) ++ "px"}}
@@ -382,6 +423,10 @@ module HeaderCell = {
       } else {
         React.null
       }}
+      <div
+        className={"resize-handle" ++ (isResizing ? " resizing" : "")}
+        onMouseDown={handleResizeStart}
+      />
     </div>
   }
 }
@@ -470,13 +515,22 @@ let make = (
 ) => {
   let (editingCell, setEditingCell) = Jotai.useAtom(GridStore.editingCellAtom)
   let (editValue, setEditValue) = Jotai.useAtom(GridStore.editValueAtom)
-  let (columnWidths, _setColumnWidths) = Jotai.useAtom(GridStore.columnWidthsAtom)
+  let (columnWidths, setColumnWidths) = Jotai.useAtom(GridStore.columnWidthsAtom)
 
   // Filter out hidden columns
   let visibleFields = table.fields->Array.filter(field => !(hiddenColumns->Array.includes(field.id)))
 
   let getColumnWidth = (fieldId: string) => {
     columnWidths->Dict.get(fieldId)->Option.getOr(150)
+  }
+
+  // Handle column resize
+  let handleColumnResize = (fieldId: string, newWidth: int) => {
+    setColumnWidths(prev => {
+      let updated = prev->Dict.toArray->Dict.fromArray
+      updated->Dict.set(fieldId, newWidth)
+      updated
+    })
   }
 
   // Start editing a cell
@@ -616,6 +670,7 @@ let make = (
             width={getColumnWidth(field.id)}
             sortConfig
             onSort
+            onResize={handleColumnResize}
           />
         })
         ->React.array}

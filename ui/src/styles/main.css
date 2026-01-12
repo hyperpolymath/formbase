@@ -236,6 +236,46 @@ body {
   background: rgba(0, 0, 0, 0.05);
 }
 
+.grid-header-cell {
+  position: relative;
+}
+
+/* Column Resize Handle */
+.resize-handle {
+  position: absolute;
+  top: 0;
+  right: 0;
+  width: 6px;
+  height: 100%;
+  cursor: col-resize;
+  background: transparent;
+  transition: background 0.15s;
+  z-index: 5;
+}
+
+.resize-handle:hover,
+.resize-handle.resizing {
+  background: var(--color-primary);
+}
+
+.resize-handle::after {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 2px;
+  height: 60%;
+  background: transparent;
+  border-radius: 1px;
+  transition: background 0.15s;
+}
+
+.resize-handle:hover::after,
+.resize-handle.resizing::after {
+  background: white;
+}
+
 .grid-header-cell.sorted {
   background: rgba(33, 150, 243, 0.08);
 }
