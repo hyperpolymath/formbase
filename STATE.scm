@@ -6,7 +6,7 @@
     (version "0.1.0")
     (schema-version "1.0")
     (created "2026-01-11")
-    (updated "2026-01-12T04:00:00Z")
+    (updated "2026-01-12T12:00:00Z")
     (project "formbase")
     (repo "https://github.com/hyperpolymath/formbase"))
 
@@ -24,7 +24,7 @@
     (overall-completion 40)
     (components
       (specification 100 "README, SPEC, and SCM files complete")
-      (ui-grid 70 "Grid with editing, keyboard nav, add row, API wired")
+      (ui-grid 75 "Grid with editing, keyboard nav, add/delete row, API wired")
       (ui-views 0 "Not started")
       (backend-api 80 "Full REST router with CRUD handlers, running on 8080")
       (realtime 0 "Not started")
@@ -36,11 +36,12 @@
        "Grid component with cell editing (click to edit)"
        "Keyboard navigation (arrow keys, Enter, Tab, Escape)"
        "Add row button with optimistic updates"
+       "Delete row with Y/N confirmation"
        "API client with all endpoints"
        "Gleam HTTP server with Wisp on port 8080"
        "Full REST API router with CRUD handlers"
        "FormDB mock client for development"
-       "Vite dev server via Deno (no npm)"
+       "Vite dev server"
        "Demo data with 3 sample rows")))
 
   (route-to-mvp
@@ -106,13 +107,12 @@
 
   (critical-next-actions
     (immediate
-      ("Connect to real FormDB - replace mock client with NIF bindings")
       ("Add date picker field type")
-      ("Add multi-select dropdown field type"))
-    (this-week
-      ("Implement row deletion")
       ("Add filtering capability")
       ("Add sorting capability"))
+    (this-week
+      ("Add multi-select dropdown field type")
+      ("Connect to real FormDB - replace mock client with NIF bindings"))
     (this-month
       ("Real-time collaboration with Yjs")
       ("Provenance display for cells")
@@ -150,4 +150,11 @@
         ("Wired API calls from UI to backend (updateCell, createRow)")
         ("Fixed @rescript/runtime resolution (v12.x, vite.config.js)")
         ("Backend running on port 8080, UI on port 5173")
-        ("Full end-to-end demo working with 3 sample rows")))))
+        ("Full end-to-end demo working with 3 sample rows")))
+    (snapshot "2026-01-12T12:00:00Z"
+      (accomplishments
+        ("Implemented row deletion with Y/N confirmation UI")
+        ("Added delete button that appears on hover in row number column")
+        ("Added handleDeleteRow with optimistic update and API sync")
+        ("Added CSS styles for delete button and confirmation states")
+        ("Fixed vite.config.js npm compatibility (removed npm: protocol)")))))
