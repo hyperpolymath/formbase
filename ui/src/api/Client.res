@@ -14,10 +14,10 @@ type apiResult<'a> = result<'a, apiError>
 let fetchJson = async (
   ~method: string,
   ~path: string,
-  ~body: option<Js.Json.t>=?,
+  ~body: option<JSON.t>=?,
   (),
-): result<Js.Json.t, apiError> => {
-  let headers = Js.Dict.fromArray([
+): result<JSON.t, apiError> => {
+  let headers = Dict.fromArray([
     ("Content-Type", "application/json"),
     ("Accept", "application/json"),
   ])
@@ -25,11 +25,11 @@ let fetchJson = async (
   let init = {
     "method": method,
     "headers": headers,
-    "body": body->Option.map(Js.Json.stringify)->Js.Nullable.fromOption,
+    "body": body->Option.map(j => JSON.stringify(j))->Nullable.fromOption,
   }
 
   try {
-    let response = await Fetch.fetch(baseUrl ++ path, Obj.magic(init))
+    let response = await Fetch.fetch(baseUrl ++ path, init)
     let json = await Fetch.Response.json(response)
 
     if Fetch.Response.ok(response) {
@@ -59,11 +59,11 @@ let getBase = async (id: string) => {
 }
 
 let createBase = async (name: string, description: option<string>) => {
-  let body = Js.Dict.fromArray([
-    ("name", Js.Json.string(name)),
-    ("description", description->Option.mapOr(Js.Json.null, Js.Json.string)),
+  let body = Dict.fromArray([
+    ("name", JSON.Encode.string(name)),
+    ("description", description->Option.mapOr(JSON.Encode.null, JSON.Encode.string)),
   ])
-  await fetchJson(~method="POST", ~path="/bases", ~body=Js.Json.object_(body), ())
+  await fetchJson(~method="POST", ~path="/bases", ~body=JSON.Encode.object(body), ())
 }
 
 // Table CRUD
@@ -72,30 +72,32 @@ let getTables = async (baseId: string) => {
 }
 
 let createTable = async (baseId: string, name: string) => {
-  let body = Js.Dict.fromArray([("name", Js.Json.string(name))])
+  let body = Dict.fromArray([("name", JSON.Encode.string(name))])
   await fetchJson(
     ~method="POST",
     ~path="/bases/" ++ baseId ++ "/tables",
-    ~body=Js.Json.object_(body),
+    ~body=JSON.Encode.object(body),
     (),
   )
 }
 
 // Row CRUD
+@val external encodeURIComponent: string => string = "encodeURIComponent"
+
 let getRows = async (baseId: string, tableId: string, ~filter: option<string>=?, ()) => {
   let path = "/bases/" ++ baseId ++ "/tables/" ++ tableId ++ "/rows"
   let queryPath = switch filter {
-  | Some(f) => path ++ "?filter=" ++ Js.Global.encodeURIComponent(f)
+  | Some(f) => path ++ "?filter=" ++ encodeURIComponent(f)
   | None => path
   }
   await fetchJson(~method="GET", ~path=queryPath, ())
 }
 
-let createRow = async (baseId: string, tableId: string, cells: Js.Dict.t<Js.Json.t>) => {
+let createRow = async (baseId: string, tableId: string, cells: Dict.t<JSON.t>) => {
   await fetchJson(
     ~method="POST",
     ~path="/bases/" ++ baseId ++ "/tables/" ++ tableId ++ "/rows",
-    ~body=Js.Json.object_(cells),
+    ~body=JSON.Encode.object(cells),
     (),
   )
 }
@@ -105,18 +107,18 @@ let updateCell = async (
   tableId: string,
   rowId: string,
   fieldId: string,
-  value: Js.Json.t,
+  value: JSON.t,
   ~rationale: option<string>=?,
   (),
 ) => {
-  let body = Js.Dict.fromArray([
+  let body = Dict.fromArray([
     ("value", value),
-    ("rationale", rationale->Option.mapOr(Js.Json.null, Js.Json.string)),
+    ("rationale", rationale->Option.mapOr(JSON.Encode.null, JSON.Encode.string)),
   ])
   await fetchJson(
     ~method="PATCH",
     ~path="/bases/" ++ baseId ++ "/tables/" ++ tableId ++ "/rows/" ++ rowId ++ "/cells/" ++ fieldId,
-    ~body=Js.Json.object_(body),
+    ~body=JSON.Encode.object(body),
     (),
   )
 }

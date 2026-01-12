@@ -28,15 +28,24 @@ type fieldConfig = {
   defaultValue: option<string>,
 }
 
+// Attachment file object
+type attachmentFile = {
+  id: string,
+  name: string,
+  url: string,
+  mimeType: string,
+  size: int,
+}
+
 type cellValue =
   | TextValue(string)
   | NumberValue(float)
   | SelectValue(string)
   | MultiSelectValue(array<string>)
-  | DateValue(Js.Date.t)
+  | DateValue(Date.t)
   | CheckboxValue(bool)
   | LinkValue(array<string>) // row ids
-  | AttachmentValue(array<{..}>) // file objects
+  | AttachmentValue(array<attachmentFile>)
   | NullValue
 
 type provenanceEntry = {
@@ -56,7 +65,7 @@ type cell = {
 
 type row = {
   id: string,
-  cells: Js.Dict.t<cell>,
+  cells: dict<cell>,
   createdAt: string,
   updatedAt: string,
 }

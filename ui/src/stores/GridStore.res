@@ -24,11 +24,17 @@ type editingCell = {
 
 let editingCellAtom: Jotai.atom<option<editingCell>> = Jotai.atom(None)
 
+// Current edit value (string representation for input)
+let editValueAtom: Jotai.atom<string> = Jotai.atom("")
+
+// Pending cell updates (rowId.fieldId => newValue)
+let pendingUpdatesAtom: Jotai.atom<dict<cellValue>> = Jotai.atom(Dict.make())
+
 // Column widths (field id => width in px)
-let columnWidthsAtom: Jotai.atom<Js.Dict.t<int>> = Jotai.atom(Js.Dict.empty())
+let columnWidthsAtom: Jotai.atom<dict<int>> = Jotai.atom(Dict.make())
 
 // Row heights (row id => height in px)
-let rowHeightsAtom: Jotai.atom<Js.Dict.t<int>> = Jotai.atom(Js.Dict.empty())
+let rowHeightsAtom: Jotai.atom<dict<int>> = Jotai.atom(Dict.make())
 
 // Hidden columns
 let hiddenColumnsAtom: Jotai.atom<array<string>> = Jotai.atom([])

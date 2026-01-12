@@ -1,5 +1,5 @@
 {
-  "name": "formbase-ui",
+  "name": "@formbase/ui",
   "sources": [
     {
       "dir": "src",
@@ -13,7 +13,7 @@
     }
   ],
   "suffix": ".res.js",
-  "bs-dependencies": [
+  "dependencies": [
     "@rescript/core",
     "@rescript/react"
   ],
