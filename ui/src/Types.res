@@ -1,0 +1,95 @@
+// SPDX-License-Identifier: AGPL-3.0-or-later
+// Core types for FormBase
+
+type fieldType =
+  | Text
+  | Number
+  | Select(array<string>)
+  | MultiSelect(array<string>)
+  | Date
+  | DateTime
+  | Checkbox
+  | Link(string) // table id
+  | Attachment
+  | Formula(string)
+  | Rollup(string, string) // linked field, aggregation
+  | Lookup(string, string) // linked field, lookup field
+  | Url
+  | Email
+  | Phone
+  | Rating
+  | Barcode
+
+type fieldConfig = {
+  id: string,
+  name: string,
+  fieldType: fieldType,
+  required: bool,
+  defaultValue: option<string>,
+}
+
+type cellValue =
+  | TextValue(string)
+  | NumberValue(float)
+  | SelectValue(string)
+  | MultiSelectValue(array<string>)
+  | DateValue(Js.Date.t)
+  | CheckboxValue(bool)
+  | LinkValue(array<string>) // row ids
+  | AttachmentValue(array<{..}>) // file objects
+  | NullValue
+
+type provenanceEntry = {
+  timestamp: string,
+  userId: string,
+  userName: string,
+  previousValue: option<cellValue>,
+  newValue: cellValue,
+  rationale: option<string>,
+}
+
+type cell = {
+  fieldId: string,
+  value: cellValue,
+  provenance: array<provenanceEntry>,
+}
+
+type row = {
+  id: string,
+  cells: Js.Dict.t<cell>,
+  createdAt: string,
+  updatedAt: string,
+}
+
+type table = {
+  id: string,
+  name: string,
+  fields: array<fieldConfig>,
+  primaryFieldId: string,
+}
+
+type base = {
+  id: string,
+  name: string,
+  description: option<string>,
+  tables: array<table>,
+  createdAt: string,
+  updatedAt: string,
+}
+
+type viewType =
+  | Grid
+  | Kanban(string) // group by field id
+  | Calendar(string) // date field id
+  | Gallery(string) // image field id
+  | Form
+
+type viewConfig = {
+  id: string,
+  name: string,
+  tableId: string,
+  viewType: viewType,
+  visibleFields: array<string>,
+  sortBy: option<(string, [#Asc | #Desc])>,
+  filterBy: option<string>, // FQL filter expression
+}

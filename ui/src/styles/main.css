@@ -1,0 +1,323 @@
+/* SPDX-License-Identifier: AGPL-3.0-or-later */
+/* FormBase - Main Styles */
+
+:root {
+  --color-bg: #ffffff;
+  --color-bg-secondary: #f5f5f5;
+  --color-border: #e0e0e0;
+  --color-border-focus: #2196f3;
+  --color-text: #333333;
+  --color-text-secondary: #666666;
+  --color-primary: #2196f3;
+  --color-primary-hover: #1976d2;
+  --cell-height: 32px;
+  --header-height: 36px;
+  --row-number-width: 48px;
+  --font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  --font-mono: "SF Mono", "Monaco", "Inconsolata", "Fira Mono", monospace;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  padding: 0;
+  font-family: var(--font-family);
+  font-size: 14px;
+  color: var(--color-text);
+  background: var(--color-bg);
+}
+
+/* App Layout */
+.formbase-app {
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
+}
+
+.formbase-header {
+  padding: 16px 24px;
+  border-bottom: 1px solid var(--color-border);
+  background: var(--color-bg);
+}
+
+.formbase-header h1 {
+  margin: 0 0 4px 0;
+  font-size: 24px;
+  font-weight: 600;
+}
+
+.formbase-header p {
+  margin: 0;
+  color: var(--color-text-secondary);
+}
+
+.formbase-main {
+  flex: 1;
+  overflow: hidden;
+  display: flex;
+}
+
+/* Sidebar */
+.sidebar {
+  width: 240px;
+  border-right: 1px solid var(--color-border);
+  background: var(--color-bg-secondary);
+  padding: 16px;
+  overflow-y: auto;
+}
+
+.sidebar-section {
+  margin-bottom: 24px;
+}
+
+.sidebar-section h3 {
+  margin: 0 0 8px 0;
+  font-size: 12px;
+  font-weight: 600;
+  text-transform: uppercase;
+  color: var(--color-text-secondary);
+}
+
+.sidebar-item {
+  padding: 8px 12px;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: background 0.15s;
+}
+
+.sidebar-item:hover {
+  background: rgba(0, 0, 0, 0.05);
+}
+
+.sidebar-item.active {
+  background: var(--color-primary);
+  color: white;
+}
+
+/* Grid Component */
+.grid-container {
+  flex: 1;
+  overflow: auto;
+  outline: none;
+}
+
+.grid-header {
+  position: sticky;
+  top: 0;
+  z-index: 10;
+  background: var(--color-bg-secondary);
+  border-bottom: 2px solid var(--color-border);
+}
+
+.grid-row {
+  display: flex;
+  border-bottom: 1px solid var(--color-border);
+}
+
+.grid-row:hover {
+  background: rgba(33, 150, 243, 0.04);
+}
+
+.grid-row-number,
+.grid-row-number-header {
+  width: var(--row-number-width);
+  min-width: var(--row-number-width);
+  height: var(--cell-height);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--color-text-secondary);
+  font-size: 12px;
+  background: var(--color-bg-secondary);
+  border-right: 1px solid var(--color-border);
+}
+
+.grid-row-number-header {
+  height: var(--header-height);
+  font-weight: 600;
+}
+
+.grid-header-cell {
+  height: var(--header-height);
+  display: flex;
+  align-items: center;
+  padding: 0 12px;
+  border-right: 1px solid var(--color-border);
+  font-weight: 500;
+  cursor: pointer;
+  user-select: none;
+}
+
+.grid-header-cell:hover {
+  background: rgba(0, 0, 0, 0.05);
+}
+
+.field-icon {
+  margin-right: 8px;
+  color: var(--color-text-secondary);
+  font-family: var(--font-mono);
+  font-size: 11px;
+}
+
+.field-name {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.grid-cell {
+  height: var(--cell-height);
+  min-width: 150px;
+  display: flex;
+  align-items: center;
+  padding: 0 12px;
+  border-right: 1px solid var(--color-border);
+  cursor: cell;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.grid-cell:focus {
+  outline: 2px solid var(--color-border-focus);
+  outline-offset: -2px;
+}
+
+.grid-cell.editing {
+  background: white;
+  box-shadow: inset 0 0 0 2px var(--color-primary);
+}
+
+.grid-body {
+  min-height: 200px;
+}
+
+/* Add Row Button */
+.add-row-button {
+  display: flex;
+  align-items: center;
+  padding: 8px 12px;
+  color: var(--color-text-secondary);
+  cursor: pointer;
+  border: none;
+  background: none;
+  font-size: 14px;
+}
+
+.add-row-button:hover {
+  color: var(--color-primary);
+  background: rgba(33, 150, 243, 0.08);
+}
+
+/* View Tabs */
+.view-tabs {
+  display: flex;
+  gap: 4px;
+  padding: 8px 16px;
+  border-bottom: 1px solid var(--color-border);
+  background: var(--color-bg);
+}
+
+.view-tab {
+  padding: 6px 12px;
+  border: none;
+  background: none;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 13px;
+  color: var(--color-text-secondary);
+}
+
+.view-tab:hover {
+  background: var(--color-bg-secondary);
+}
+
+.view-tab.active {
+  background: var(--color-primary);
+  color: white;
+}
+
+/* Toolbar */
+.toolbar {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 16px;
+  border-bottom: 1px solid var(--color-border);
+}
+
+.toolbar-button {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  padding: 6px 12px;
+  border: 1px solid var(--color-border);
+  border-radius: 4px;
+  background: white;
+  cursor: pointer;
+  font-size: 13px;
+}
+
+.toolbar-button:hover {
+  background: var(--color-bg-secondary);
+}
+
+.toolbar-search {
+  flex: 1;
+  max-width: 300px;
+  padding: 6px 12px;
+  border: 1px solid var(--color-border);
+  border-radius: 4px;
+  font-size: 13px;
+}
+
+.toolbar-search:focus {
+  outline: none;
+  border-color: var(--color-primary);
+}
+
+/* Provenance Panel */
+.provenance-panel {
+  width: 320px;
+  border-left: 1px solid var(--color-border);
+  background: var(--color-bg);
+  padding: 16px;
+  overflow-y: auto;
+}
+
+.provenance-entry {
+  padding: 12px;
+  border: 1px solid var(--color-border);
+  border-radius: 4px;
+  margin-bottom: 8px;
+}
+
+.provenance-header {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 8px;
+  font-size: 12px;
+  color: var(--color-text-secondary);
+}
+
+.provenance-user {
+  font-weight: 500;
+  color: var(--color-text);
+}
+
+.provenance-change {
+  font-family: var(--font-mono);
+  font-size: 12px;
+  padding: 8px;
+  background: var(--color-bg-secondary);
+  border-radius: 4px;
+}
+
+.provenance-rationale {
+  margin-top: 8px;
+  font-style: italic;
+  color: var(--color-text-secondary);
+}

@@ -10,6 +10,8 @@ repository = { type = "github", user = "hyperpolymath", repo = "formbase" }
 gleam_stdlib = ">= 0.34.0 and < 2.0.0"
 gleam_http = ">= 3.6.0 and < 4.0.0"
 gleam_json = ">= 1.0.0 and < 2.0.0"
+gleam_erlang = ">= 0.25.0 and < 1.0.0"
+gleam_otp = ">= 0.10.0 and < 1.0.0"
 mist = ">= 1.0.0 and < 2.0.0"
 wisp = ">= 0.14.0 and < 1.0.0"
 
