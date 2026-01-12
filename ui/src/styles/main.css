@@ -431,6 +431,133 @@ body {
   border-color: var(--color-primary);
 }
 
+.toolbar-button.active {
+  background: var(--color-primary);
+  color: white;
+  border-color: var(--color-primary);
+}
+
+.toolbar-button.has-filter {
+  border-color: var(--color-primary);
+}
+
+.filter-badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 18px;
+  height: 18px;
+  padding: 0 5px;
+  margin-left: 4px;
+  background: var(--color-primary);
+  color: white;
+  border-radius: 9px;
+  font-size: 11px;
+  font-weight: 600;
+}
+
+.toolbar-button.active .filter-badge {
+  background: white;
+  color: var(--color-primary);
+}
+
+/* Filter Panel */
+.filter-panel {
+  padding: 12px 16px;
+  border-bottom: 1px solid var(--color-border);
+  background: var(--color-bg-secondary);
+}
+
+.filter-panel-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 12px;
+}
+
+.filter-panel-title {
+  font-weight: 600;
+  font-size: 13px;
+  color: var(--color-text);
+}
+
+.filter-add-button {
+  padding: 4px 8px;
+  border: none;
+  background: none;
+  color: var(--color-primary);
+  cursor: pointer;
+  font-size: 13px;
+}
+
+.filter-add-button:hover {
+  text-decoration: underline;
+}
+
+.filter-conditions {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.filter-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.filter-field-select,
+.filter-operator-select {
+  padding: 6px 8px;
+  border: 1px solid var(--color-border);
+  border-radius: 4px;
+  background: white;
+  font-size: 13px;
+  min-width: 120px;
+}
+
+.filter-value-input {
+  flex: 1;
+  padding: 6px 8px;
+  border: 1px solid var(--color-border);
+  border-radius: 4px;
+  font-size: 13px;
+  min-width: 150px;
+}
+
+.filter-field-select:focus,
+.filter-operator-select:focus,
+.filter-value-input:focus {
+  outline: none;
+  border-color: var(--color-primary);
+}
+
+.filter-remove-button {
+  width: 24px;
+  height: 24px;
+  padding: 0;
+  border: none;
+  border-radius: 4px;
+  background: transparent;
+  color: var(--color-text-secondary);
+  cursor: pointer;
+  font-size: 14px;
+  font-weight: bold;
+  line-height: 1;
+}
+
+.filter-remove-button:hover {
+  background: #ffebee;
+  color: #f44336;
+}
+
+.filter-empty {
+  color: var(--color-text-secondary);
+  font-size: 13px;
+  font-style: italic;
+  padding: 8px 0;
+}
+
 /* Provenance Panel */
 .provenance-panel {
   width: 320px;

@@ -86,12 +86,159 @@ module ViewTabs = {
   }
 }
 
+module FilterPanel = {
+  @react.component
+  let make = (
+    ~fields: array<fieldConfig>,
+    ~filters: array<GridStore.filterCondition>,
+    ~onAddFilter: GridStore.filterCondition => unit,
+    ~onRemoveFilter: string => unit,
+    ~onUpdateFilter: GridStore.filterCondition => unit,
+  ) => {
+    let operatorOptions = [
+      (GridStore.Contains, "contains"),
+      (GridStore.DoesNotContain, "does not contain"),
+      (GridStore.Is, "is"),
+      (GridStore.IsNot, "is not"),
+      (GridStore.IsEmpty, "is empty"),
+      (GridStore.IsNotEmpty, "is not empty"),
+      (GridStore.GreaterThan, ">"),
+      (GridStore.LessThan, "<"),
+      (GridStore.GreaterOrEqual, ">="),
+      (GridStore.LessOrEqual, "<="),
+    ]
+
+    let operatorToString = (op: GridStore.filterOperator): string => {
+      switch op {
+      | Contains => "contains"
+      | DoesNotContain => "does not contain"
+      | Is => "is"
+      | IsNot => "is not"
+      | IsEmpty => "is empty"
+      | IsNotEmpty => "is not empty"
+      | GreaterThan => ">"
+      | LessThan => "<"
+      | GreaterOrEqual => ">="
+      | LessOrEqual => "<="
+      }
+    }
+
+    let stringToOperator = (s: string): GridStore.filterOperator => {
+      switch s {
+      | "contains" => Contains
+      | "does not contain" => DoesNotContain
+      | "is" => Is
+      | "is not" => IsNot
+      | "is empty" => IsEmpty
+      | "is not empty" => IsNotEmpty
+      | ">" => GreaterThan
+      | "<" => LessThan
+      | ">=" => GreaterOrEqual
+      | "<=" => LessOrEqual
+      | _ => Contains
+      }
+    }
+
+    let handleAddFilter = () => {
+      let firstField = fields->Array.get(0)
+      switch firstField {
+      | Some(field) =>
+        onAddFilter({
+          id: "filter_" ++ Float.toString(Date.now()),
+          fieldId: field.id,
+          operator: Contains,
+          value: "",
+        })
+      | None => ()
+      }
+    }
+
+    <div className="filter-panel">
+      <div className="filter-panel-header">
+        <span className="filter-panel-title"> {React.string("Filters")} </span>
+        <button className="filter-add-button" onClick={_ => handleAddFilter()} type_="button">
+          {React.string("+ Add filter")}
+        </button>
+      </div>
+      <div className="filter-conditions">
+        {filters
+        ->Array.map(filter => {
+          <div key={filter.id} className="filter-row">
+            <select
+              className="filter-field-select"
+              value={filter.fieldId}
+              onChange={e => {
+                let newFieldId = ReactEvent.Form.target(e)["value"]
+                onUpdateFilter({...filter, fieldId: newFieldId})
+              }}>
+              {fields
+              ->Array.map(field =>
+                <option key={field.id} value={field.id}> {React.string(field.name)} </option>
+              )
+              ->React.array}
+            </select>
+            <select
+              className="filter-operator-select"
+              value={operatorToString(filter.operator)}
+              onChange={e => {
+                let newOp = stringToOperator(ReactEvent.Form.target(e)["value"])
+                onUpdateFilter({...filter, operator: newOp})
+              }}>
+              {operatorOptions
+              ->Array.map(((_, label)) =>
+                <option key={label} value={label}> {React.string(label)} </option>
+              )
+              ->React.array}
+            </select>
+            {switch filter.operator {
+            | IsEmpty | IsNotEmpty => React.null
+            | _ =>
+              <input
+                type_="text"
+                className="filter-value-input"
+                value={filter.value}
+                placeholder="Value..."
+                onChange={e => {
+                  let newValue = ReactEvent.Form.target(e)["value"]
+                  onUpdateFilter({...filter, value: newValue})
+                }}
+              />
+            }}
+            <button
+              className="filter-remove-button"
+              onClick={_ => onRemoveFilter(filter.id)}
+              type_="button"
+              title="Remove filter">
+              {React.string("x")}
+            </button>
+          </div>
+        })
+        ->React.array}
+        {if Array.length(filters) == 0 {
+          <div className="filter-empty"> {React.string("No filters applied")} </div>
+        } else {
+          React.null
+        }}
+      </div>
+    </div>
+  }
+}
+
 module Toolbar = {
   @react.component
-  let make = () => {
+  let make = (~filterCount: int, ~onToggleFilter: unit => unit, ~showFilter: bool) => {
     <div className="toolbar">
       <button className="toolbar-button"> {React.string("Hide fields")} </button>
-      <button className="toolbar-button"> {React.string("Filter")} </button>
+      <button
+        className={"toolbar-button" ++ (showFilter ? " active" : "") ++ (filterCount > 0 ? " has-filter" : "")}
+        onClick={_ => onToggleFilter()}>
+        {React.string("Filter")}
+        {if filterCount > 0 {
+          <span className="filter-badge"> {React.string(Int.toString(filterCount))} </span>
+        } else {
+          React.null
+        }}
+      </button>
       <button className="toolbar-button"> {React.string("Sort")} </button>
       <button className="toolbar-button"> {React.string("Group")} </button>
       <input type_="search" className="toolbar-search" placeholder="Search..." />
@@ -102,6 +249,29 @@ module Toolbar = {
 @react.component
 let make = () => {
   let (rows, setRows) = React.useState(() => demoRows)
+  let (filters, setFilters) = Jotai.useAtom(GridStore.filtersAtom)
+  let (filterConjunction, _setFilterConjunction) = Jotai.useAtom(GridStore.filterConjunctionAtom)
+  let (showFilterPanel, setShowFilterPanel) = React.useState(() => false)
+
+  // Apply filters to get visible rows
+  let filteredRows = GridStore.applyFilters(rows, filters, filterConjunction)
+
+  // Filter handlers
+  let handleAddFilter = (filter: GridStore.filterCondition) => {
+    setFilters(prev => Array.concat(prev, [filter]))
+  }
+
+  let handleRemoveFilter = (filterId: string) => {
+    setFilters(prev => prev->Array.filter(f => f.id != filterId))
+  }
+
+  let handleUpdateFilter = (filter: GridStore.filterCondition) => {
+    setFilters(prev => prev->Array.map(f => f.id == filter.id ? filter : f))
+  }
+
+  let handleToggleFilterPanel = () => {
+    setShowFilterPanel(prev => !prev)
+  }
 
   // Convert cellValue to JSON for API
   let cellValueToJson = (value: cellValue): JSON.t => {
@@ -232,8 +402,19 @@ let make = () => {
         <Sidebar />
         <div style={{display: "flex", flexDirection: "column", flex: "1"}}>
           <ViewTabs />
-          <Toolbar />
-          <Grid table={demoTable} rows={rows} onCellUpdate={handleCellUpdate} onAddRow={handleAddRow} onDeleteRow={handleDeleteRow} />
+          <Toolbar filterCount={Array.length(filters)} onToggleFilter={handleToggleFilterPanel} showFilter={showFilterPanel} />
+          {if showFilterPanel {
+            <FilterPanel
+              fields={demoTable.fields}
+              filters
+              onAddFilter={handleAddFilter}
+              onRemoveFilter={handleRemoveFilter}
+              onUpdateFilter={handleUpdateFilter}
+            />
+          } else {
+            React.null
+          }}
+          <Grid table={demoTable} rows={filteredRows} onCellUpdate={handleCellUpdate} onAddRow={handleAddRow} onDeleteRow={handleDeleteRow} />
         </div>
       </main>
     </div>
