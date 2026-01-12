@@ -6,7 +6,7 @@
     (version "0.1.0")
     (schema-version "1.0")
     (created "2026-01-11")
-    (updated "2026-01-12")
+    (updated "2026-01-12T04:00:00Z")
     (project "formbase")
     (repo "https://github.com/hyperpolymath/formbase"))
 
@@ -21,25 +21,27 @@
 
   (current-position
     (phase "implementation")
-    (overall-completion 20)
+    (overall-completion 40)
     (components
       (specification 100 "README, SPEC, and SCM files complete")
-      (ui-grid 30 "Grid component scaffold, types, stores, API client")
+      (ui-grid 70 "Grid with editing, keyboard nav, add row, API wired")
       (ui-views 0 "Not started")
-      (backend-api 40 "Full REST router, types, placeholder handlers")
+      (backend-api 80 "Full REST router with CRUD handlers, running on 8080")
       (realtime 0 "Not started")
       (automations 0 "Not started")
-      (formdb-integration 25 "Client scaffold, FQL builder, types"))
+      (formdb-integration 30 "Mock client working, needs real NIF bindings"))
     (working-features
       ("ReScript + React project structure"
        "Jotai state management bindings"
-       "Grid component with cell rendering"
+       "Grid component with cell editing (click to edit)"
+       "Keyboard navigation (arrow keys, Enter, Tab, Escape)"
+       "Add row button with optimistic updates"
        "API client with all endpoints"
-       "Gleam HTTP server with Wisp"
-       "Full REST API router"
-       "FormDB client interface scaffold"
-       "FQL query builder"
-       "Demo data for development")))
+       "Gleam HTTP server with Wisp on port 8080"
+       "Full REST API router with CRUD handlers"
+       "FormDB mock client for development"
+       "Vite dev server via Deno (no npm)"
+       "Demo data with 3 sample rows")))
 
   (route-to-mvp
     (milestone "Phase 0: Project Setup"
@@ -104,14 +106,17 @@
 
   (critical-next-actions
     (immediate
-      ("Wire FormDB FFI calls in Gleam client")
-      ("Implement cell editing in Grid component"))
+      ("Connect to real FormDB - replace mock client with NIF bindings")
+      ("Add date picker field type")
+      ("Add multi-select dropdown field type"))
     (this-week
-      ("Connect UI to backend API")
-      ("Implement basic CRUD operations end-to-end"))
+      ("Implement row deletion")
+      ("Add filtering capability")
+      ("Add sorting capability"))
     (this-month
-      ("MVP grid view with basic CRUD")
-      ("Provenance display for cells")))
+      ("Real-time collaboration with Yjs")
+      ("Provenance display for cells")
+      ("MVP grid view complete")))
 
   (session-history
     (snapshot "2026-01-11"
@@ -134,4 +139,15 @@
         ("Created full REST API router with all endpoints")
         ("Created types.gleam with all data types")
         ("Created FormDB client scaffold with connection, query, mutation APIs")
-        ("Created FQL query builder for type-safe queries")))))
+        ("Created FQL query builder for type-safe queries")))
+    (snapshot "2026-01-12T04:00:00Z"
+      (accomplishments
+        ("Implemented cell editing with click-to-edit UI")
+        ("Added Add Row button with optimistic updates")
+        ("Implemented keyboard navigation (arrow keys, Enter, Tab, Escape)")
+        ("Rewrote router.gleam with correct Gleam decode API")
+        ("Fixed formbase_server.gleam with mist.start and envoy")
+        ("Wired API calls from UI to backend (updateCell, createRow)")
+        ("Fixed @rescript/runtime resolution (v12.x, vite.config.js)")
+        ("Backend running on port 8080, UI on port 5173")
+        ("Full end-to-end demo working with 3 sample rows")))))
