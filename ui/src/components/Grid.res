@@ -466,12 +466,14 @@ let make = (
   ~onDeleteRow: string => unit,
   ~sortConfig: option<GridStore.sortConfig>,
   ~onSort: string => unit,
+  ~hiddenColumns: array<string>,
 ) => {
   let (editingCell, setEditingCell) = Jotai.useAtom(GridStore.editingCellAtom)
   let (editValue, setEditValue) = Jotai.useAtom(GridStore.editValueAtom)
   let (columnWidths, _setColumnWidths) = Jotai.useAtom(GridStore.columnWidthsAtom)
 
-  let visibleFields = table.fields
+  // Filter out hidden columns
+  let visibleFields = table.fields->Array.filter(field => !(hiddenColumns->Array.includes(field.id)))
 
   let getColumnWidth = (fieldId: string) => {
     columnWidths->Dict.get(fieldId)->Option.getOr(150)

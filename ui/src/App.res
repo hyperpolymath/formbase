@@ -228,11 +228,61 @@ module FilterPanel = {
   }
 }
 
+module HideFieldsPanel = {
+  @react.component
+  let make = (
+    ~fields: array<fieldConfig>,
+    ~hiddenColumns: array<string>,
+    ~onToggleColumn: string => unit,
+  ) => {
+    <div className="hide-fields-panel">
+      <div className="hide-fields-header">
+        <span className="hide-fields-title"> {React.string("Fields")} </span>
+      </div>
+      <div className="hide-fields-list">
+        {fields
+        ->Array.map(field => {
+          let isHidden = hiddenColumns->Array.includes(field.id)
+          <label key={field.id} className={"hide-field-item" ++ (isHidden ? " hidden" : "")}>
+            <input
+              type_="checkbox"
+              checked={!isHidden}
+              onChange={_ => onToggleColumn(field.id)}
+              className="hide-field-checkbox"
+            />
+            <span className="hide-field-name"> {React.string(field.name)} </span>
+          </label>
+        })
+        ->React.array}
+      </div>
+      <div className="hide-fields-hint">
+        {React.string("Uncheck to hide fields from the grid view")}
+      </div>
+    </div>
+  }
+}
+
 module Toolbar = {
   @react.component
-  let make = (~filterCount: int, ~onToggleFilter: unit => unit, ~showFilter: bool) => {
+  let make = (
+    ~filterCount: int,
+    ~onToggleFilter: unit => unit,
+    ~showFilter: bool,
+    ~hiddenCount: int,
+    ~onToggleHideFields: unit => unit,
+    ~showHideFields: bool,
+  ) => {
     <div className="toolbar">
-      <button className="toolbar-button"> {React.string("Hide fields")} </button>
+      <button
+        className={"toolbar-button" ++ (showHideFields ? " active" : "") ++ (hiddenCount > 0 ? " has-filter" : "")}
+        onClick={_ => onToggleHideFields()}>
+        {React.string("Hide fields")}
+        {if hiddenCount > 0 {
+          <span className="filter-badge"> {React.string(Int.toString(hiddenCount))} </span>
+        } else {
+          React.null
+        }}
+      </button>
       <button
         className={"toolbar-button" ++ (showFilter ? " active" : "") ++ (filterCount > 0 ? " has-filter" : "")}
         onClick={_ => onToggleFilter()}>
@@ -256,7 +306,9 @@ let make = () => {
   let (filters, setFilters) = Jotai.useAtom(GridStore.filtersAtom)
   let (filterConjunction, _setFilterConjunction) = Jotai.useAtom(GridStore.filterConjunctionAtom)
   let (sortConfig, setSortConfig) = Jotai.useAtom(GridStore.sortConfigAtom)
+  let (hiddenColumns, setHiddenColumns) = Jotai.useAtom(GridStore.hiddenColumnsAtom)
   let (showFilterPanel, setShowFilterPanel) = React.useState(() => false)
+  let (showHideFieldsPanel, setShowHideFieldsPanel) = React.useState(() => false)
 
   // Apply filters and sorting to get visible rows
   let filteredRows = GridStore.applyFilters(rows, filters, filterConjunction)
@@ -277,6 +329,23 @@ let make = () => {
 
   let handleToggleFilterPanel = () => {
     setShowFilterPanel(prev => !prev)
+    setShowHideFieldsPanel(_ => false)
+  }
+
+  let handleToggleHideFieldsPanel = () => {
+    setShowHideFieldsPanel(prev => !prev)
+    setShowFilterPanel(_ => false)
+  }
+
+  // Toggle column visibility
+  let handleToggleColumn = (fieldId: string) => {
+    setHiddenColumns(prev => {
+      if prev->Array.includes(fieldId) {
+        prev->Array.filter(id => id != fieldId)
+      } else {
+        Array.concat(prev, [fieldId])
+      }
+    })
   }
 
   // Sort handler - toggle direction or set new field
@@ -425,8 +494,21 @@ let make = () => {
         <Sidebar />
         <div style={{display: "flex", flexDirection: "column", flex: "1"}}>
           <ViewTabs />
-          <Toolbar filterCount={Array.length(filters)} onToggleFilter={handleToggleFilterPanel} showFilter={showFilterPanel} />
-          {if showFilterPanel {
+          <Toolbar
+            filterCount={Array.length(filters)}
+            onToggleFilter={handleToggleFilterPanel}
+            showFilter={showFilterPanel}
+            hiddenCount={Array.length(hiddenColumns)}
+            onToggleHideFields={handleToggleHideFieldsPanel}
+            showHideFields={showHideFieldsPanel}
+          />
+          {if showHideFieldsPanel {
+            <HideFieldsPanel
+              fields={demoTable.fields}
+              hiddenColumns
+              onToggleColumn={handleToggleColumn}
+            />
+          } else if showFilterPanel {
             <FilterPanel
               fields={demoTable.fields}
               filters
@@ -437,7 +519,7 @@ let make = () => {
           } else {
             React.null
           }}
-          <Grid table={demoTable} rows={sortedRows} onCellUpdate={handleCellUpdate} onAddRow={handleAddRow} onDeleteRow={handleDeleteRow} sortConfig onSort={handleSort} />
+          <Grid table={demoTable} rows={sortedRows} onCellUpdate={handleCellUpdate} onAddRow={handleAddRow} onDeleteRow={handleDeleteRow} sortConfig onSort={handleSort} hiddenColumns />
         </div>
       </main>
     </div>

@@ -704,3 +704,63 @@ body {
   font-size: 12px;
   color: var(--color-primary);
 }
+
+/* Hide Fields Panel */
+.hide-fields-panel {
+  padding: 12px 16px;
+  border-bottom: 1px solid var(--color-border);
+  background: var(--color-bg-secondary);
+}
+
+.hide-fields-header {
+  margin-bottom: 12px;
+}
+
+.hide-fields-title {
+  font-weight: 600;
+  font-size: 13px;
+  color: var(--color-text);
+}
+
+.hide-fields-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.hide-field-item {
+  display: flex;
+  align-items: center;
+  padding: 6px 12px;
+  border: 1px solid var(--color-border);
+  border-radius: 4px;
+  background: white;
+  cursor: pointer;
+  transition: all 0.15s;
+}
+
+.hide-field-item:hover {
+  border-color: var(--color-primary);
+}
+
+.hide-field-item.hidden {
+  background: var(--color-bg-secondary);
+  color: var(--color-text-secondary);
+  text-decoration: line-through;
+}
+
+.hide-field-checkbox {
+  margin: 0 8px 0 0;
+  cursor: pointer;
+}
+
+.hide-field-name {
+  font-size: 13px;
+}
+
+.hide-fields-hint {
+  margin-top: 12px;
+  font-size: 12px;
+  color: var(--color-text-secondary);
+  font-style: italic;
+}
