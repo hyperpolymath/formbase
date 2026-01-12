@@ -6,7 +6,7 @@
     (version "0.1.0")
     (schema-version "1.0")
     (created "2026-01-11")
-    (updated "2026-01-12T12:00:00Z")
+    (updated "2026-01-12T14:00:00Z")
     (project "formbase")
     (repo "https://github.com/hyperpolymath/formbase"))
 
@@ -21,10 +21,10 @@
 
   (current-position
     (phase "implementation")
-    (overall-completion 40)
+    (overall-completion 50)
     (components
       (specification 100 "README, SPEC, and SCM files complete")
-      (ui-grid 75 "Grid with editing, keyboard nav, add/delete row, API wired")
+      (ui-grid 85 "Grid with editing, keyboard nav, add/delete row, filtering, API wired")
       (ui-views 0 "Not started")
       (backend-api 80 "Full REST router with CRUD handlers, running on 8080")
       (realtime 0 "Not started")
@@ -37,12 +37,14 @@
        "Keyboard navigation (arrow keys, Enter, Tab, Escape)"
        "Add row button with optimistic updates"
        "Delete row with Y/N confirmation"
+       "Date picker with native HTML5 input"
+       "Filter panel with 10 operators"
        "API client with all endpoints"
        "Gleam HTTP server with Wisp on port 8080"
        "Full REST API router with CRUD handlers"
        "FormDB mock client for development"
        "Vite dev server"
-       "Demo data with 3 sample rows")))
+       "Demo data with dates")))
 
   (route-to-mvp
     (milestone "Phase 0: Project Setup"
@@ -107,12 +109,12 @@
 
   (critical-next-actions
     (immediate
-      ("Add date picker field type")
-      ("Add filtering capability")
-      ("Add sorting capability"))
-    (this-week
+      ("Add sorting capability")
       ("Add multi-select dropdown field type")
-      ("Connect to real FormDB - replace mock client with NIF bindings"))
+      ("Implement column hiding"))
+    (this-week
+      ("Connect to real FormDB - replace mock client with NIF bindings")
+      ("Add column resizing"))
     (this-month
       ("Real-time collaboration with Yjs")
       ("Provenance display for cells")
@@ -157,4 +159,13 @@
         ("Added delete button that appears on hover in row number column")
         ("Added handleDeleteRow with optimistic update and API sync")
         ("Added CSS styles for delete button and confirmation states")
-        ("Fixed vite.config.js npm compatibility (removed npm: protocol)")))))
+        ("Fixed vite.config.js npm compatibility (removed npm: protocol)")))
+    (snapshot "2026-01-12T14:00:00Z"
+      (accomplishments
+        ("Added date values to demo data for date picker demonstration")
+        ("Implemented filtering capability with FilterPanel component")
+        ("Added 10 filter operators (Contains, Is, GreaterThan, IsEmpty, etc.)")
+        ("Added filter state management with Jotai atoms")
+        ("Added cellMatchesFilter and applyFilters helper functions")
+        ("Added toolbar filter toggle button with active filter badge")
+        ("Added comprehensive CSS for filter panel UI")))))
