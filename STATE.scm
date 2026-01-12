@@ -6,7 +6,7 @@
     (version "0.1.0")
     (schema-version "1.0")
     (created "2026-01-11")
-    (updated "2026-01-12T14:00:00Z")
+    (updated "2026-01-12T21:00:00Z")
     (project "formbase")
     (repo "https://github.com/hyperpolymath/formbase"))
 
@@ -21,10 +21,10 @@
 
   (current-position
     (phase "implementation")
-    (overall-completion 50)
+    (overall-completion 55)
     (components
       (specification 100 "README, SPEC, and SCM files complete")
-      (ui-grid 85 "Grid with editing, keyboard nav, add/delete row, filtering, API wired")
+      (ui-grid 95 "Grid with editing, sorting, filtering, multi-select, column hiding")
       (ui-views 0 "Not started")
       (backend-api 80 "Full REST router with CRUD handlers, running on 8080")
       (realtime 0 "Not started")
@@ -39,12 +39,15 @@
        "Delete row with Y/N confirmation"
        "Date picker with native HTML5 input"
        "Filter panel with 10 operators"
+       "Column sorting (click header to toggle Asc/Desc/None)"
+       "Multi-select dropdown field type with tag display"
+       "Column hiding with hide fields panel"
        "API client with all endpoints"
        "Gleam HTTP server with Wisp on port 8080"
        "Full REST API router with CRUD handlers"
        "FormDB mock client for development"
        "Vite dev server"
-       "Demo data with dates")))
+       "Demo data with dates and tags")))
 
   (route-to-mvp
     (milestone "Phase 0: Project Setup"
@@ -61,10 +64,10 @@
       (status "in-progress")
       (items
         ("Create/delete bases and tables" . scaffolded)
-        ("Add/edit/delete rows" . scaffolded)
-        ("Core field types (text, number, date, select)" . partial)
-        ("Sort, filter, hide columns" . scaffolded)
-        ("Keyboard navigation" . scaffolded)
+        ("Add/edit/delete rows" . done)
+        ("Core field types (text, number, date, select, multi-select)" . done)
+        ("Sort, filter, hide columns" . done)
+        ("Keyboard navigation" . done)
         ("FormDB provenance integration" . scaffolded)))
 
     (milestone "Phase 2: Views"
@@ -109,15 +112,15 @@
 
   (critical-next-actions
     (immediate
-      ("Add sorting capability")
-      ("Add multi-select dropdown field type")
-      ("Implement column hiding"))
+      ("Add column resizing")
+      ("Add search functionality")
+      ("Implement undo/redo for cell edits"))
     (this-week
       ("Connect to real FormDB - replace mock client with NIF bindings")
-      ("Add column resizing"))
+      ("Add cell-level provenance display"))
     (this-month
       ("Real-time collaboration with Yjs")
-      ("Provenance display for cells")
+      ("Provenance panel for cells")
       ("MVP grid view complete")))
 
   (session-history
@@ -168,4 +171,17 @@
         ("Added filter state management with Jotai atoms")
         ("Added cellMatchesFilter and applyFilters helper functions")
         ("Added toolbar filter toggle button with active filter badge")
-        ("Added comprehensive CSS for filter panel UI")))))
+        ("Added comprehensive CSS for filter panel UI")))
+    (snapshot "2026-01-12T21:00:00Z"
+      (accomplishments
+        ("Implemented column sorting with click-to-sort headers")
+        ("Added compareCellValues helper for type-aware sorting")
+        ("Sort toggles Asc → Desc → Clear on repeated clicks")
+        ("Added sort indicators (↑/↓) to sorted column headers")
+        ("Implemented multi-select dropdown field type")
+        ("Multi-select displays as styled tags, edits with checkbox dropdown")
+        ("Added Tags field to demo data with sample values")
+        ("Implemented column hiding with HideFieldsPanel component")
+        ("Hide fields panel shows all fields with visibility toggles")
+        ("Hidden column count shown in toolbar badge")
+        ("Mutually exclusive panels (filter vs hide fields)")))))
