@@ -10,6 +10,7 @@ let demoTable: table = {
   fields: [
     {id: "fld_name", name: "Name", fieldType: Text, required: true, defaultValue: None},
     {id: "fld_status", name: "Status", fieldType: Select(["Not Started", "In Progress", "Done"]), required: false, defaultValue: Some("Not Started")},
+    {id: "fld_tags", name: "Tags", fieldType: MultiSelect(["Frontend", "Backend", "Bug", "Feature", "Docs", "Urgent"]), required: false, defaultValue: None},
     {id: "fld_priority", name: "Priority", fieldType: Number, required: false, defaultValue: None},
     {id: "fld_due", name: "Due Date", fieldType: Date, required: false, defaultValue: None},
     {id: "fld_done", name: "Complete", fieldType: Checkbox, required: false, defaultValue: None},
@@ -24,6 +25,7 @@ let demoRows: array<row> = [
     cells: Dict.fromArray([
       ("fld_name", {fieldId: "fld_name", value: TextValue("Build grid component"), provenance: []}),
       ("fld_status", {fieldId: "fld_status", value: SelectValue("In Progress"), provenance: []}),
+      ("fld_tags", {fieldId: "fld_tags", value: MultiSelectValue(["Frontend", "Feature"]), provenance: []}),
       ("fld_priority", {fieldId: "fld_priority", value: NumberValue(1.0), provenance: []}),
       ("fld_due", {fieldId: "fld_due", value: DateValue(Date.fromString("2026-01-15")), provenance: []}),
       ("fld_done", {fieldId: "fld_done", value: CheckboxValue(false), provenance: []}),
@@ -36,6 +38,7 @@ let demoRows: array<row> = [
     cells: Dict.fromArray([
       ("fld_name", {fieldId: "fld_name", value: TextValue("Implement FormDB bindings"), provenance: []}),
       ("fld_status", {fieldId: "fld_status", value: SelectValue("Not Started"), provenance: []}),
+      ("fld_tags", {fieldId: "fld_tags", value: MultiSelectValue(["Backend", "Feature", "Urgent"]), provenance: []}),
       ("fld_priority", {fieldId: "fld_priority", value: NumberValue(2.0), provenance: []}),
       ("fld_due", {fieldId: "fld_due", value: DateValue(Date.fromString("2026-01-20")), provenance: []}),
       ("fld_done", {fieldId: "fld_done", value: CheckboxValue(false), provenance: []}),
@@ -48,6 +51,7 @@ let demoRows: array<row> = [
     cells: Dict.fromArray([
       ("fld_name", {fieldId: "fld_name", value: TextValue("Add real-time collaboration"), provenance: []}),
       ("fld_status", {fieldId: "fld_status", value: SelectValue("Not Started"), provenance: []}),
+      ("fld_tags", {fieldId: "fld_tags", value: MultiSelectValue(["Frontend", "Backend", "Feature"]), provenance: []}),
       ("fld_priority", {fieldId: "fld_priority", value: NumberValue(3.0), provenance: []}),
       ("fld_due", {fieldId: "fld_due", value: DateValue(Date.fromString("2026-02-01")), provenance: []}),
       ("fld_done", {fieldId: "fld_done", value: CheckboxValue(false), provenance: []}),

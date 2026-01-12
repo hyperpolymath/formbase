@@ -159,6 +159,53 @@ module EditableInput = {
           ->React.array}
         </select>
       }
+    | MultiSelect(options) => {
+        // Parse current value to array of selected options
+        let selectedValues =
+          value->String.split(",")->Array.map(String.trim)->Array.filter(s => s != "")
+
+        let toggleOption = (opt: string) => {
+          let newSelected = if selectedValues->Array.includes(opt) {
+            selectedValues->Array.filter(v => v != opt)
+          } else {
+            Array.concat(selectedValues, [opt])
+          }
+          onChange(newSelected->Array.join(", "))
+        }
+
+        <div className="multiselect-dropdown" tabIndex={0}>
+          <div className="multiselect-header">
+            {React.string(
+              if Array.length(selectedValues) == 0 {
+                "Select options..."
+              } else {
+                Int.toString(Array.length(selectedValues)) ++ " selected"
+              },
+            )}
+          </div>
+          <div className="multiselect-options">
+            {options
+            ->Array.map(opt => {
+              let isSelected = selectedValues->Array.includes(opt)
+              <label key={opt} className={"multiselect-option" ++ (isSelected ? " selected" : "")}>
+                <input
+                  type_="checkbox"
+                  checked={isSelected}
+                  onChange={_ => toggleOption(opt)}
+                  className="multiselect-checkbox"
+                />
+                <span className="multiselect-label"> {React.string(opt)} </span>
+              </label>
+            })
+            ->React.array}
+          </div>
+          <div className="multiselect-actions">
+            <button type_="button" className="multiselect-done" onClick={_ => onSave()}>
+              {React.string("Done")}
+            </button>
+          </div>
+        </div>
+      }
     | Url => {
         <input
           ref={ReactDOM.Ref.domRef(inputRef)}
@@ -218,6 +265,12 @@ module Cell = {
     let cell = row.cells->Dict.get(field.id)
     let value = cell->Option.map(c => c.value)->Option.getOr(NullValue)
 
+    // For multi-select, we render tags instead of plain text
+    let isMultiSelect = switch field.fieldType {
+    | MultiSelect(_) => true
+    | _ => false
+    }
+
     let displayValue = switch value {
     | TextValue(s) => s
     | NumberValue(n) => Float.toString(n)
@@ -228,6 +281,16 @@ module Cell = {
     | LinkValue(ids) => ids->Array.length->Int.toString ++ " linked"
     | NullValue => ""
     | _ => "..."
+    }
+
+    let multiSelectTags = switch value {
+    | MultiSelectValue(arr) if Array.length(arr) > 0 =>
+      <div className="multiselect-tags">
+        {arr
+        ->Array.map(tag => <span key={tag} className="multiselect-tag"> {React.string(tag)} </span>)
+        ->React.array}
+      </div>
+    | _ => React.null
     }
 
     let isComputed = switch field.fieldType {
@@ -263,6 +326,8 @@ module Cell = {
           onSave={onSaveEdit}
           onCancel={onCancelEdit}
         />
+      } else if isMultiSelect {
+        multiSelectTags
       } else {
         React.string(displayValue)
       }}
@@ -282,6 +347,7 @@ module HeaderCell = {
     | Text => "Aa"
     | Number => "#"
     | Select(_) => "v"
+    | MultiSelect(_) => "vv"
     | Date | DateTime => "D"
     | Checkbox => "[]"
     | Url => "@"
