@@ -272,7 +272,12 @@ module Cell = {
 
 module HeaderCell = {
   @react.component
-  let make = (~field: fieldConfig, ~width: int, ~onResize: int => unit) => {
+  let make = (
+    ~field: fieldConfig,
+    ~width: int,
+    ~sortConfig: option<GridStore.sortConfig>,
+    ~onSort: string => unit,
+  ) => {
     let icon = switch field.fieldType {
     | Text => "Aa"
     | Number => "#"
@@ -284,12 +289,33 @@ module HeaderCell = {
     | _ => "?"
     }
 
+    let isSorted = sortConfig->Option.map(s => s.fieldId == field.id)->Option.getOr(false)
+    let sortDirection = sortConfig->Option.flatMap(s =>
+      if s.fieldId == field.id {
+        Some(s.direction)
+      } else {
+        None
+      }
+    )
+
+    let sortIndicator = switch sortDirection {
+    | Some(#Asc) => " ↑"
+    | Some(#Desc) => " ↓"
+    | None => ""
+    }
+
     <div
-      className="grid-header-cell"
+      className={"grid-header-cell" ++ (isSorted ? " sorted" : "")}
       style={{width: Int.toString(width) ++ "px"}}
-      role="columnheader">
+      role="columnheader"
+      onClick={_ => onSort(field.id)}>
       <span className="field-icon"> {React.string(icon)} </span>
       <span className="field-name"> {React.string(field.name)} </span>
+      {if isSorted {
+        <span className="sort-indicator"> {React.string(sortIndicator)} </span>
+      } else {
+        React.null
+      }}
     </div>
   }
 }
@@ -372,6 +398,8 @@ let make = (
   ~onCellUpdate: (string, string, cellValue) => unit,
   ~onAddRow: unit => unit,
   ~onDeleteRow: string => unit,
+  ~sortConfig: option<GridStore.sortConfig>,
+  ~onSort: string => unit,
 ) => {
   let (editingCell, setEditingCell) = Jotai.useAtom(GridStore.editingCellAtom)
   let (editValue, setEditValue) = Jotai.useAtom(GridStore.editValueAtom)
@@ -518,7 +546,8 @@ let make = (
             key={field.id}
             field
             width={getColumnWidth(field.id)}
-            onResize={_ => ()}
+            sortConfig
+            onSort
           />
         })
         ->React.array}

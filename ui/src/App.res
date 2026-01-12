@@ -251,10 +251,12 @@ let make = () => {
   let (rows, setRows) = React.useState(() => demoRows)
   let (filters, setFilters) = Jotai.useAtom(GridStore.filtersAtom)
   let (filterConjunction, _setFilterConjunction) = Jotai.useAtom(GridStore.filterConjunctionAtom)
+  let (sortConfig, setSortConfig) = Jotai.useAtom(GridStore.sortConfigAtom)
   let (showFilterPanel, setShowFilterPanel) = React.useState(() => false)
 
-  // Apply filters to get visible rows
+  // Apply filters and sorting to get visible rows
   let filteredRows = GridStore.applyFilters(rows, filters, filterConjunction)
+  let sortedRows = GridStore.applySort(filteredRows, sortConfig)
 
   // Filter handlers
   let handleAddFilter = (filter: GridStore.filterCondition) => {
@@ -271,6 +273,23 @@ let make = () => {
 
   let handleToggleFilterPanel = () => {
     setShowFilterPanel(prev => !prev)
+  }
+
+  // Sort handler - toggle direction or set new field
+  let handleSort = (fieldId: string) => {
+    setSortConfig(prev => {
+      switch prev {
+      | Some({fieldId: currentFieldId, direction}) if currentFieldId == fieldId =>
+        // Same field - toggle direction or clear
+        switch direction {
+        | #Asc => Some({GridStore.fieldId: fieldId, direction: #Desc})
+        | #Desc => None // Clear sort on third click
+        }
+      | _ =>
+        // Different field - sort ascending
+        Some({GridStore.fieldId: fieldId, direction: #Asc})
+      }
+    })
   }
 
   // Convert cellValue to JSON for API
@@ -414,7 +433,7 @@ let make = () => {
           } else {
             React.null
           }}
-          <Grid table={demoTable} rows={filteredRows} onCellUpdate={handleCellUpdate} onAddRow={handleAddRow} onDeleteRow={handleDeleteRow} />
+          <Grid table={demoTable} rows={sortedRows} onCellUpdate={handleCellUpdate} onAddRow={handleAddRow} onDeleteRow={handleDeleteRow} sortConfig onSort={handleSort} />
         </div>
       </main>
     </div>

@@ -47,6 +47,47 @@ type sortConfig = {
 
 let sortConfigAtom: Jotai.atom<option<sortConfig>> = Jotai.atom(None)
 
+// Helper to compare cell values for sorting
+let compareCellValues = (a: cellValue, b: cellValue): int => {
+  switch (a, b) {
+  | (NumberValue(na), NumberValue(nb)) =>
+    if na < nb { -1 } else if na > nb { 1 } else { 0 }
+  | (TextValue(sa), TextValue(sb)) =>
+    String.localeCompare(sa, sb)->Float.toInt
+  | (SelectValue(sa), SelectValue(sb)) =>
+    String.localeCompare(sa, sb)->Float.toInt
+  | (DateValue(da), DateValue(db)) => {
+      let ta = Date.getTime(da)
+      let tb = Date.getTime(db)
+      if ta < tb { -1 } else if ta > tb { 1 } else { 0 }
+    }
+  | (CheckboxValue(ba), CheckboxValue(bb)) =>
+    if ba == bb { 0 } else if ba { 1 } else { -1 }
+  | (NullValue, NullValue) => 0
+  | (NullValue, _) => 1  // Nulls sort to end
+  | (_, NullValue) => -1
+  | _ => 0
+  }
+}
+
+// Apply sorting to rows
+let applySort = (rows: array<row>, sortConfig: option<sortConfig>): array<row> => {
+  switch sortConfig {
+  | None => rows
+  | Some({fieldId, direction}) =>
+    rows->Array.toSorted((a, b) => {
+      let cellA = a.cells->Dict.get(fieldId)->Option.map(c => c.value)->Option.getOr(NullValue)
+      let cellB = b.cells->Dict.get(fieldId)->Option.map(c => c.value)->Option.getOr(NullValue)
+      let cmp = compareCellValues(cellA, cellB)
+      let result = switch direction {
+      | #Asc => cmp
+      | #Desc => -cmp
+      }
+      Int.toFloat(result)
+    })
+  }
+}
+
 // Filter configuration
 type filterOperator =
   | Contains
