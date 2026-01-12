@@ -9,6 +9,7 @@
     "react": "npm:react@^18.2.0",
     "react-dom": "npm:react-dom@^18.2.0",
     "@rescript/core": "npm:@rescript/core@^1.3.0",
+    "@rescript/runtime": "npm:@rescript/runtime@^11.1.0",
     "jotai": "npm:jotai@^2.6.0",
     "yjs": "npm:yjs@^13.6.0"
   },
