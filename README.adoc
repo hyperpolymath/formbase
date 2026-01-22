@@ -292,7 +292,7 @@ Link records to canonical sources. DOI-linked records are immutable; edits creat
 
 == License
 
-AGPL-3.0-or-later
+PMPL-1.0-or-later
 
 == Contributing
 
