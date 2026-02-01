@@ -123,7 +123,7 @@ static ERL_NIF_TERM status_to_atom(ErlNifEnv* env, int32_t status) {
 ////////////////////////////////////////////////////////////////////////////////
 
 // Initialize FormBD
-static ERL_NIF_TERM nif_init(ErlNifEnv* env, int argc, const ERL_NIF_TERM argv[]) {
+static ERL_NIF_TERM nif_fdb_init(ErlNifEnv* env, int argc, const ERL_NIF_TERM argv[]) {
     int32_t status = fdb_init();
     return status_to_atom(env, status);
 }
@@ -304,7 +304,7 @@ static ERL_NIF_TERM nif_cursor_next(ErlNifEnv* env, int argc, const ERL_NIF_TERM
 ////////////////////////////////////////////////////////////////////////////////
 
 static ErlNifFunc nif_funcs[] = {
-    {"init", 0, nif_init},
+    {"init", 0, nif_fdb_init},
     {"open", 1, nif_open},
     {"create", 2, nif_create},
     {"txn_begin", 1, nif_txn_begin},
