@@ -100,21 +100,36 @@ static void fdb_cursor_resource_dtor(ErlNifEnv* env, void* obj) {
 }
 
 // Helper: Convert status code to Erlang atom
-static ERL_NIF_TERM status_to_atom(ErlNifEnv* env, int32_t status) {
+// Convert status code to Gleam FdbError atom
+static ERL_NIF_TERM status_to_error_atom(ErlNifEnv* env, int32_t status) {
     switch (status) {
-        case STATUS_OK: return enif_make_atom(env, "ok");
-        case STATUS_INVALID_ARG: return enif_make_atom(env, "invalid_arg");
-        case STATUS_NOT_FOUND: return enif_make_atom(env, "not_found");
-        case STATUS_PERMISSION_DENIED: return enif_make_atom(env, "permission_denied");
-        case STATUS_ALREADY_EXISTS: return enif_make_atom(env, "already_exists");
-        case STATUS_CONSTRAINT_VIOLATION: return enif_make_atom(env, "constraint_violation");
-        case STATUS_TYPE_MISMATCH: return enif_make_atom(env, "type_mismatch");
-        case STATUS_OUT_OF_MEMORY: return enif_make_atom(env, "out_of_memory");
-        case STATUS_IO_ERROR: return enif_make_atom(env, "io_error");
-        case STATUS_CORRUPTION: return enif_make_atom(env, "corruption");
-        case STATUS_CONFLICT: return enif_make_atom(env, "conflict");
+        case STATUS_INVALID_ARG: return enif_make_atom(env, "InvalidArg");
+        case STATUS_NOT_FOUND: return enif_make_atom(env, "NotFound");
+        case STATUS_PERMISSION_DENIED: return enif_make_atom(env, "PermissionDenied");
+        case STATUS_ALREADY_EXISTS: return enif_make_atom(env, "AlreadyExists");
+        case STATUS_CONSTRAINT_VIOLATION: return enif_make_atom(env, "ConstraintViolation");
+        case STATUS_TYPE_MISMATCH: return enif_make_atom(env, "TypeMismatch");
+        case STATUS_OUT_OF_MEMORY: return enif_make_atom(env, "OutOfMemory");
+        case STATUS_IO_ERROR: return enif_make_atom(env, "IoError");
+        case STATUS_CORRUPTION: return enif_make_atom(env, "Corruption");
+        case STATUS_CONFLICT: return enif_make_atom(env, "Conflict");
         case STATUS_INTERNAL_ERROR:
-        default: return enif_make_atom(env, "internal_error");
+        default: return enif_make_atom(env, "InternalError");
+    }
+}
+
+// Convert status code to Gleam Result(Nil, FdbError)
+static ERL_NIF_TERM status_to_result(ErlNifEnv* env, int32_t status) {
+    if (status == STATUS_OK) {
+        // Return {ok, nil} for Gleam Result type
+        return enif_make_tuple2(env,
+            enif_make_atom(env, "ok"),
+            enif_make_atom(env, "nil"));
+    } else {
+        // Return {error, ErrorAtom} for Gleam Result type
+        return enif_make_tuple2(env,
+            enif_make_atom(env, "error"),
+            status_to_error_atom(env, status));
     }
 }
 
@@ -125,7 +140,7 @@ static ERL_NIF_TERM status_to_atom(ErlNifEnv* env, int32_t status) {
 // Initialize FormBD
 static ERL_NIF_TERM nif_fdb_init(ErlNifEnv* env, int argc, const ERL_NIF_TERM argv[]) {
     int32_t status = fdb_init();
-    return status_to_atom(env, status);
+    return status_to_result(env, status);
 }
 
 // Open database: open(Path) -> {ok, DbRef} | {error, Reason}
@@ -151,7 +166,7 @@ static ERL_NIF_TERM nif_open(ErlNifEnv* env, int argc, const ERL_NIF_TERM argv[]
         enif_release_resource(db_res);
         return enif_make_tuple2(env,
             enif_make_atom(env, "error"),
-            status_to_atom(env, status));
+            status_to_error_atom(env, status));
     }
 }
 
@@ -180,7 +195,7 @@ static ERL_NIF_TERM nif_create(ErlNifEnv* env, int argc, const ERL_NIF_TERM argv
         enif_release_resource(db_res);
         return enif_make_tuple2(env,
             enif_make_atom(env, "error"),
-            status_to_atom(env, status));
+            status_to_error_atom(env, status));
     }
 }
 
@@ -207,7 +222,7 @@ static ERL_NIF_TERM nif_txn_begin(ErlNifEnv* env, int argc, const ERL_NIF_TERM a
         enif_release_resource(txn_res);
         return enif_make_tuple2(env,
             enif_make_atom(env, "error"),
-            status_to_atom(env, status));
+            status_to_error_atom(env, status));
     }
 }
 
@@ -228,7 +243,7 @@ static ERL_NIF_TERM nif_txn_commit(ErlNifEnv* env, int argc, const ERL_NIF_TERM 
     } else {
         return enif_make_tuple2(env,
             enif_make_atom(env, "error"),
-            status_to_atom(env, status));
+            status_to_error_atom(env, status));
     }
 }
 
@@ -265,7 +280,7 @@ static ERL_NIF_TERM nif_query_execute(ErlNifEnv* env, int argc, const ERL_NIF_TE
         enif_release_resource(cursor_res);
         return enif_make_tuple2(env,
             enif_make_atom(env, "error"),
-            status_to_atom(env, status));
+            status_to_error_atom(env, status));
     }
 }
 
@@ -295,7 +310,7 @@ static ERL_NIF_TERM nif_cursor_next(ErlNifEnv* env, int argc, const ERL_NIF_TERM
     } else {
         return enif_make_tuple2(env,
             enif_make_atom(env, "error"),
-            status_to_atom(env, status));
+            status_to_error_atom(env, status));
     }
 }
 

@@ -7,6 +7,8 @@
 
 import gleam/dynamic.{type Dynamic}
 import gleam/json
+import gleam/option.{type Option, None, Some}
+import gleam/list
 
 /// Opaque handle to a FormBD database
 pub opaque type Db {
@@ -180,9 +182,10 @@ fn cursor_to_list_helper(
 
 /// Get current timestamp in milliseconds
 @external(erlang, "erlang", "system_time")
-fn erlang_system_time(unit: Dynamic) -> Int
+fn erlang_system_time_native() -> Int
 
 fn timestamp_now() -> Int {
-  // Get time in milliseconds
-  erlang_system_time(dynamic.from(1_000_000)) / 1000
+  // Get native time and convert to milliseconds
+  // Native time is typically nanoseconds on modern systems
+  erlang_system_time_native() / 1_000_000
 }
