@@ -1,48 +1,28 @@
-# SPDX-License-Identifier: AGPL-3.0-or-later
-# Makefile for FormDB NIF
-
-.PHONY: all clean test install
+# SPDX-License-Identifier: PMPL-1.0-or-later
+# Makefile for FormBD NIF
 
 # Erlang paths
-ERL_INCLUDE_PATH ?= $(shell erl -noshell -eval 'io:format("~s/usr/include", [code:root_dir()])' -s init stop)
-ERL_LIB_PATH ?= $(shell erl -noshell -eval 'io:format("~s/usr/lib", [code:root_dir()])' -s init stop)
+ERL_INCLUDE = $(shell erl -eval 'io:format("~s", [code:root_dir()])' -s init stop -noshell)/erts-$(shell erl -eval 'io:format("~s", [erlang:system_info(version)])' -s init stop -noshell)/include
 
-# FormDB path (set this to your FormDB installation)
-FORMDB_PATH ?= $(HOME)/Documents/hyperpolymath-repos/formdb
+# FormBD library path
+FORMBD_LIB_DIR = ../../../formbd/ffi/zig/zig-out/lib
 
-# Output directory
-PRIV_DIR = ../priv
+# Compiler flags
+CFLAGS = -fPIC -O2 -Wall -I$(ERL_INCLUDE)
+LDFLAGS = -shared -L$(FORMBD_LIB_DIR) -lformbd
 
-# Zig build options
-ZIG_BUILD_FLAGS = -Doptimize=ReleaseSafe
+# Output
+TARGET = ../priv/formbd_nif.so
 
-all: $(PRIV_DIR)/formdb_nif.so
+.PHONY: all clean
 
-$(PRIV_DIR):
-	mkdir -p $(PRIV_DIR)
+all: $(TARGET)
 
-$(PRIV_DIR)/formdb_nif.so: src/formdb_nif.zig $(PRIV_DIR)
-	ERL_INCLUDE_PATH=$(ERL_INCLUDE_PATH) zig build $(ZIG_BUILD_FLAGS)
-
-# Build FormDB first if needed
-formdb:
-	cd $(FORMDB_PATH)/core-zig && zig build
-
-# Compile Erlang module
-erl: src/formdb_nif.erl
-	erlc -o ../ebin src/formdb_nif.erl
+$(TARGET): formbd_nif.c
+	@mkdir -p ../priv
+	$(CC) $(CFLAGS) formbd_nif.c -o $(TARGET) $(LDFLAGS)
+	@echo "Built $(TARGET)"
 
 clean:
-	rm -rf zig-cache zig-out $(PRIV_DIR)/formdb_nif.so
-
-test:
-	zig build test
-
-# Install to system Erlang lib directory
-install: all
-	cp $(PRIV_DIR)/formdb_nif.so $(ERL_LIB_PATH)/
-
-# Development: build and copy to priv
-dev: all erl
-	@echo "NIF built successfully"
-	@echo "Library: $(PRIV_DIR)/formdb_nif.so"
+	rm -f $(TARGET)
+	rm -rf ../priv
