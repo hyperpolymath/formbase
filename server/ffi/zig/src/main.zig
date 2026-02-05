@@ -9,15 +9,18 @@ const c = @cImport({
     @cInclude("erl_nif.h");
 });
 
-// Opaque handle types (matching Idris2 ABI)
-const DbHandle = opaque {};
-const TxnHandle = opaque {};
+// Import Lithoglyph core library
+const lithoglyph = @import("lithoglyph");
+const FdbDb = lithoglyph.FdbDb;
+const FdbTxn = lithoglyph.FdbTxn;
+const FdbStatus = lithoglyph.types.FdbStatus;
+const FdbTxnMode = lithoglyph.types.FdbTxnMode;
+const FdbBlob = lithoglyph.types.FdbBlob;
+const FdbResult = lithoglyph.types.FdbResult;
 
-// Transaction mode enumeration
-const TxnMode = enum(u32) {
-    ReadOnly = 0,
-    ReadWrite = 1,
-};
+// Opaque handle types (matching Idris2 ABI)
+const DbHandle = FdbDb;
+const TxnHandle = FdbTxn;
 
 // Version struct (matching Idris2 Version record)
 const Version = extern struct {
@@ -36,54 +39,6 @@ const Timestamp = u64;
 var gpa = std.heap.GeneralPurposeAllocator(.{}){};
 const allocator = gpa.allocator();
 
-// Database connection state
-const Database = struct {
-    path: []const u8,
-    allocator: std.mem.Allocator,
-    // TODO: Add actual Lithoglyph database handle here
-    // For now, this is a placeholder structure
-    dummy_field: u64,
-
-    fn init(alloc: std.mem.Allocator, path: []const u8) !*Database {
-        const db = try alloc.create(Database);
-        db.* = .{
-            .path = try alloc.dupe(u8, path),
-            .allocator = alloc,
-            .dummy_field = 0xDEADBEEF,
-        };
-        return db;
-    }
-
-    fn deinit(self: *Database) void {
-        self.allocator.free(self.path);
-        self.allocator.destroy(self);
-    }
-};
-
-// Transaction state
-const Transaction = struct {
-    db: *Database,
-    mode: TxnMode,
-    allocator: std.mem.Allocator,
-    // TODO: Add actual Lithoglyph transaction handle here
-    dummy_field: u64,
-
-    fn init(alloc: std.mem.Allocator, db: *Database, mode: TxnMode) !*Transaction {
-        const txn = try alloc.create(Transaction);
-        txn.* = .{
-            .db = db,
-            .mode = mode,
-            .allocator = alloc,
-            .dummy_field = 0xCAFEBABE,
-        };
-        return txn;
-    }
-
-    fn deinit(self: *Transaction) void {
-        self.allocator.destroy(self);
-    }
-};
-
 // ============================================================================
 // Exported C-compatible functions (matching Idris2 Foreign.idr)
 // ============================================================================
@@ -101,58 +56,83 @@ export fn formdb_nif_version(major: *u8, minor: *u8, patch: *u8) void {
 export fn formdb_nif_db_open(path: [*:0]const u8) ?*DbHandle {
     const path_slice = std.mem.span(path);
 
-    const db = Database.init(allocator, path_slice) catch {
-        return null;
-    };
+    var out_db: ?*FdbDb = null;
+    var out_err: FdbBlob = undefined;
 
-    // Cast to opaque handle
-    return @ptrCast(db);
+    const status = lithoglyph.fdb_db_open(
+        path_slice.ptr,
+        path_slice.len,
+        null, // opts_ptr
+        0,    // opts_len
+        &out_db,
+        &out_err,
+    );
+
+    if (status != .ok) {
+        // Log error if available
+        if (out_err.toSlice()) |err_slice| {
+            std.log.err("Failed to open database: {s}", .{err_slice});
+        }
+        return null;
+    }
+
+    return out_db;
 }
 
 /// Close database connection
 /// Returns: 0 on success, -1 on error
 export fn formdb_nif_db_close(handle: *DbHandle) c_int {
-    const db: *Database = @ptrCast(@alignCast(handle));
-    db.deinit();
-    return 0;
+    const status = lithoglyph.fdb_db_close(handle);
+    return if (status == .ok) 0 else -1;
 }
 
 /// Begin transaction
 /// mode: 0 = ReadOnly, 1 = ReadWrite
 /// Returns: TxnHandle pointer or NULL on error
 export fn formdb_nif_txn_begin(handle: *DbHandle, mode_int: u32) ?*TxnHandle {
-    const db: *Database = @ptrCast(@alignCast(handle));
+    const mode: FdbTxnMode = if (mode_int == 0) .read_only else .read_write;
 
-    const mode: TxnMode = @enumFromInt(mode_int);
+    var out_txn: ?*FdbTxn = null;
+    var out_err: FdbBlob = undefined;
 
-    const txn = Transaction.init(allocator, db, mode) catch {
+    const status = lithoglyph.fdb_txn_begin(
+        handle,
+        mode,
+        &out_txn,
+        &out_err,
+    );
+
+    if (status != .ok) {
+        if (out_err.toSlice()) |err_slice| {
+            std.log.err("Failed to begin transaction: {s}", .{err_slice});
+        }
         return null;
-    };
+    }
 
-    // Cast to opaque handle
-    return @ptrCast(txn);
+    return out_txn;
 }
 
 /// Commit transaction
 /// Returns: 0 on success, -1 on error
 export fn formdb_nif_txn_commit(handle: *TxnHandle) c_int {
-    const txn: *Transaction = @ptrCast(@alignCast(handle));
+    var out_err: FdbBlob = undefined;
+    const status = lithoglyph.fdb_txn_commit(handle, &out_err);
 
-    // TODO: Implement actual commit logic
+    if (status != .ok) {
+        if (out_err.toSlice()) |err_slice| {
+            std.log.err("Failed to commit transaction: {s}", .{err_slice});
+        }
+        return -1;
+    }
 
-    txn.deinit();
     return 0;
 }
 
 /// Abort transaction
 /// Returns: 0 on success, -1 on error
 export fn formdb_nif_txn_abort(handle: *TxnHandle) c_int {
-    const txn: *Transaction = @ptrCast(@alignCast(handle));
-
-    // TODO: Implement actual abort logic
-
-    txn.deinit();
-    return 0;
+    const status = lithoglyph.fdb_txn_abort(handle);
+    return if (status == .ok) 0 else -1;
 }
 
 /// Apply operation to transaction
@@ -167,20 +147,43 @@ export fn formdb_nif_apply(
     has_provenance_out: *u32,
     provenance_buffer: [*]u8,
 ) c_int {
-    const txn: *Transaction = @ptrCast(@alignCast(handle));
+    // Call Lithoglyph apply
+    const result = lithoglyph.fdb_apply(
+        handle,
+        op_buffer,
+        op_length,
+    );
 
-    // TODO: Parse CBOR operation and apply to Lithoglyph database
+    if (result.status != .ok) {
+        if (result.err_blob.toSlice()) |err_slice| {
+            std.log.err("Failed to apply operation: {s}", .{err_slice});
+        }
+        return -1;
+    }
 
-    // For now, return dummy values
-    block_id_out.* = 0x123456789ABCDEF0;
-    has_provenance_out.* = 1; // true
+    // Extract block ID from result blob (CBOR-encoded)
+    if (result.result_blob.toSlice()) |result_data| {
+        // TODO: Parse CBOR to extract doc_id
+        // For now, use a placeholder block ID
+        block_id_out.* = 0x1;
+        _ = result_data;
+    } else {
+        block_id_out.* = 0;
+    }
 
-    // Write dummy provenance hash (32 bytes of 0xAA)
-    @memset(provenance_buffer[0..32], 0xAA);
-
-    _ = op_buffer;
-    _ = op_length;
-    _ = txn;
+    // Check if provenance is present
+    if (result.provenance_blob.toSlice()) |prov_data| {
+        has_provenance_out.* = 1;
+        // Copy provenance data (first 32 bytes as hash)
+        const copy_len = @min(prov_data.len, 32);
+        @memcpy(provenance_buffer[0..copy_len], prov_data[0..copy_len]);
+        if (copy_len < 32) {
+            @memset(provenance_buffer[copy_len..32], 0);
+        }
+    } else {
+        has_provenance_out.* = 0;
+        @memset(provenance_buffer[0..32], 0);
+    }
 
     return 0;
 }
@@ -193,22 +196,21 @@ export fn formdb_nif_schema(
     buffer: [*]u8,
     max_size: u32,
 ) u32 {
-    const db: *Database = @ptrCast(@alignCast(handle));
+    // TODO: Implement schema retrieval from Lithoglyph
+    // For now, return empty CBOR map {}
+    const empty_map = [_]u8{
+        0xA0, // CBOR: {} (empty map)
+    };
 
-    // TODO: Serialize actual schema to CBOR
-
-    // For now, return empty CBOR array []
-    const empty_array = [_]u8{ 0x80 }; // CBOR: []
-
-    if (max_size < empty_array.len) {
+    if (max_size < empty_map.len) {
         return 0; // Buffer too small
     }
 
-    @memcpy(buffer[0..empty_array.len], &empty_array);
+    @memcpy(buffer[0..empty_map.len], &empty_map);
 
-    _ = db;
+    _ = handle;
 
-    return @intCast(empty_array.len);
+    return @intCast(empty_map.len);
 }
 
 /// Get journal entries since timestamp
@@ -220,12 +222,11 @@ export fn formdb_nif_journal(
     buffer: [*]u8,
     max_size: u32,
 ) u32 {
-    const db: *Database = @ptrCast(@alignCast(handle));
-
-    // TODO: Query journal from Lithoglyph and serialize to CBOR
-
+    // TODO: Implement journal retrieval from Lithoglyph
     // For now, return empty CBOR array []
-    const empty_array = [_]u8{ 0x80 }; // CBOR: []
+    const empty_array = [_]u8{
+        0x80, // CBOR: [] (empty array)
+    };
 
     if (max_size < empty_array.len) {
         return 0; // Buffer too small
@@ -233,7 +234,7 @@ export fn formdb_nif_journal(
 
     @memcpy(buffer[0..empty_array.len], &empty_array);
 
-    _ = db;
+    _ = handle;
     _ = since;
 
     return @intCast(empty_array.len);

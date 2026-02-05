@@ -22,6 +22,19 @@ pub fn build(b: *std.Build) void {
     ) catch "/usr/lib/erlang/usr/include";
     lib.addIncludePath(.{ .cwd_relative = erts_include });
 
+    // Add Lithoglyph core-zig as a module dependency
+    const lithoglyph_path = std.process.getEnvVarOwned(
+        b.allocator,
+        "LITHOGLYPH_PATH"
+    ) catch "../../../../lithoglyph/formdb/database/core-zig";
+
+    const lithoglyph_core = b.addModule("lithoglyph", .{
+        .root_source_file = .{ .cwd_relative =
+            b.pathJoin(&.{lithoglyph_path, "src/bridge.zig"})
+        },
+    });
+    lib.root_module.addImport("lithoglyph", lithoglyph_core);
+
     // Install to priv directory for Erlang to find
     const install_artifact = b.addInstallArtifact(lib, .{
         .dest_dir = .{
