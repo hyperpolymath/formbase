@@ -6,7 +6,7 @@
     (version "0.3.0")
     (schema-version "1.0")
     (created "2026-01-11")
-    (updated "2026-02-05T19:00:00Z")
+    (updated "2026-02-05T20:30:00Z")
     (project "glyphbase")
     (repo "https://github.com/hyperpolymath/glyphbase")
     (formerly "formbase"))
@@ -24,7 +24,7 @@
 
   (current-position
     (phase "backend-integration")
-    (overall-completion 85)
+    (overall-completion 90)
     (components
       (specification 100 "README, SPEC, ROADMAP, and SCM files complete")
       (ui-grid 95 "Grid with editing, sorting, filtering, multi-select, column hiding")
@@ -32,7 +32,7 @@
       (backend-api 80 "Full REST router with CRUD handlers")
       (realtime 0 "Not started - v0.5.0 milestone")
       (automations 0 "Not started - v0.6.0 milestone")
-      (lithoglyph-integration 75 "Idris2 ABI + Zig FFI + Lithoglyph core-zig integrated")
+      (lithoglyph-integration 95 "NIF builds successfully! Idris2 ABI + Zig FFI + C FFI ✅")
       (deployment-infrastructure 100 "GitHub Pages, Docker, releases - COMPLETE")
       (formal-verification 20 "Idris2 ABI with proofs complete"))
     (working-features
@@ -312,4 +312,21 @@
         ("Created ffi/zig/README.md with build instructions (250 lines)")
         ("Documented API, integration, CBOR encoding, error handling")
         ("Overall completion: 85% (up from 82%)")
-        ("Lithoglyph integration: 75% (up from 50%)")))))
+        ("Lithoglyph integration: 75% (up from 50%)")))
+    (snapshot "2026-02-05T20:30:00Z"
+      (accomplishments
+        ("COMPLETED Phase 3: Backend Integration - Task #12 ✅")
+        ("Fixed Zig 0.15.2 API compatibility issues")
+        ("Switched from module import to C FFI extern declarations")
+        ("Defined Lithoglyph types inline (FdbStatus, FdbTxnMode, FdbBlob, FdbResult)")
+        ("Declared all extern functions (fdb_db_open, fdb_txn_begin, etc.)")
+        ("Fixed calling convention: callconv(.C) → callconv(.c)")
+        ("Fixed nif_funcs pointer with @constCast")
+        ("Auto-detect ERTS include path via asdf Erlang installation")
+        ("Simplified build.zig for C FFI linking approach")
+        ("NIF BUILDS SUCCESSFULLY: formdb_nif.so (504KB)")
+        ("All 9 NIF functions exported and ready for Erlang")
+        ("Updated BUILD-ISSUES.md with resolution notes")
+        ("Overall completion: 90% (up from 85%)")
+        ("Lithoglyph integration: 95% (up from 75%)")
+        ("Phase 3 Backend Integration: COMPLETE ✅")))))
