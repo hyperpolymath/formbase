@@ -1,5 +1,5 @@
-// SPDX-License-Identifier: AGPL-3.0-or-later
-// Core types for FormBase
+// SPDX-License-Identifier: PMPL-1.0-or-later
+// Core types for Glyphbase
 
 type fieldType =
   | Text
