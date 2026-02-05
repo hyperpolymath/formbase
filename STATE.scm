@@ -3,33 +3,38 @@
 
 (state
   (metadata
-    (version "0.1.0")
+    (version "0.2.0")
     (schema-version "1.0")
     (created "2026-01-11")
-    (updated "2026-01-12T21:00:00Z")
-    (project "formbase")
-    (repo "https://github.com/hyperpolymath/formbase"))
+    (updated "2026-02-05T12:30:00Z")
+    (project "glyphbase")
+    (repo "https://github.com/hyperpolymath/glyphbase")
+    (formerly "formbase"))
 
   (project-context
-    (name "FormBase")
-    (tagline "Open-source Airtable alternative with provenance tracking")
+    (name "Glyphbase")
+    (tagline "Carve your data in stone - Airtable alternative with permanence")
     (tech-stack
       (frontend "ReScript" "React" "Jotai")
+      (high-assurance "rescript-dom-mounter")
+      (formal-verification "Proven (Idris2)")
       (backend "Gleam" "BEAM")
-      (database "FormDB")
+      (database "Lithoglyph")
       (realtime "Yjs" "WebSocket")))
 
   (current-position
-    (phase "implementation")
-    (overall-completion 55)
+    (phase "deployment")
+    (overall-completion 70)
     (components
-      (specification 100 "README, SPEC, and SCM files complete")
+      (specification 100 "README, SPEC, ROADMAP, and SCM files complete")
       (ui-grid 95 "Grid with editing, sorting, filtering, multi-select, column hiding")
-      (ui-views 0 "Not started")
-      (backend-api 80 "Full REST router with CRUD handlers, running on 8080")
-      (realtime 0 "Not started")
-      (automations 0 "Not started")
-      (formdb-integration 30 "Mock client working, needs real NIF bindings"))
+      (ui-views 0 "Not started - v0.3.0 milestone")
+      (backend-api 80 "Full REST router with CRUD handlers")
+      (realtime 0 "Not started - v0.5.0 milestone")
+      (automations 0 "Not started - v0.6.0 milestone")
+      (lithoglyph-integration 30 "Mock client working, needs real NIF bindings")
+      (deployment-infrastructure 100 "GitHub Pages, Docker, releases - COMPLETE")
+      (formal-verification 0 "rescript-dom-mounter + Proven integration planned for v0.4.0"))
     (working-features
       ("ReScript + React project structure"
        "Jotai state management bindings"
@@ -43,11 +48,17 @@
        "Multi-select dropdown field type with tag display"
        "Column hiding with hide fields panel"
        "API client with all endpoints"
-       "Gleam HTTP server with Wisp on port 8080"
+       "Gleam HTTP server with Wisp on port 4000"
        "Full REST API router with CRUD handlers"
-       "FormDB mock client for development"
+       "Lithoglyph mock client for development"
        "Vite dev server"
-       "Demo data with dates and tags")))
+       "Demo data with dates and tags"
+       "GitHub Pages landing page at glyphbase.lithoglyph.org"
+       "Docker multi-stage builds (UI + Server)"
+       "docker-compose production stack"
+       "Multi-arch container images (amd64, arm64)"
+       "Automated release workflow to ghcr.io"
+       "Comprehensive installation guide (6 methods)")))
 
   (route-to-mvp
     (milestone "Phase 0: Project Setup"

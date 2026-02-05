@@ -3,7 +3,8 @@
 
 (meta
   (version "1.0")
-  (name "formbase")
+  (name "glyphbase")
+  (formerly "formbase")
   (media-type "application/meta+scheme")
 
   (architecture-decisions
@@ -44,14 +45,54 @@
         ("Requires careful state management")))
 
     (adr-004
-      (status proposed)
+      (status accepted)
       (date "2026-01-11")
       (title "Custom grid component vs library")
       (context "Need a spreadsheet-like grid with excellent performance")
-      (decision "Evaluate AG Grid vs custom implementation")
+      (decision "Build custom grid component for full control and accessibility")
       (consequences
-        ("AG Grid: faster to market, commercial license")
-        ("Custom: full control, accessible, slower development"))))
+        ("Full control over rendering and behavior")
+        ("Accessibility-first design from the ground up")
+        ("No commercial license restrictions")
+        ("Slower initial development but better long-term")))
+
+    (adr-005
+      (status accepted)
+      (date "2026-02-05")
+      (title "Formal verification with Idris2")
+      (context "Need mathematical guarantees for critical data operations")
+      (decision "Integrate Proven library (Idris2) for type-level correctness proofs")
+      (consequences
+        ("Type-level guarantees for CRUD operations")
+        ("Provable correctness for formula evaluation")
+        ("Steeper learning curve for contributors")
+        ("Compile-time verification of data integrity")
+        ("Integration with rescript-dom-mounter for UI proofs")))
+
+    (adr-006
+      (status accepted)
+      (date "2026-02-05")
+      (title "High-assurance DOM rendering")
+      (context "UI bugs in data management apps can cause data loss")
+      (decision "Use rescript-dom-mounter for critical UI components")
+      (consequences
+        ("Formal verification of DOM rendering correctness")
+        ("Prevention of XSS and injection attacks at type level")
+        ("Better error messages during development")
+        ("Integration with Proven library for end-to-end proofs")))
+
+    (adr-007
+      (status accepted)
+      (date "2026-02-05")
+      (title "GitHub Pages + Docker deployment")
+      (context "Need simple deployment with custom domain support")
+      (decision "Use GitHub Pages for docs/landing, Docker for application")
+      (consequences
+        ("Free hosting for documentation site")
+        ("Custom domain (glyphbase.lithoglyph.org)")
+        ("Multi-arch Docker images (amd64, arm64)")
+        ("Automated releases to ghcr.io")
+        ("6 installation methods for different use cases"))))
 
   (development-practices
     (code-style
@@ -84,11 +125,20 @@
       (features "feat/* - feature branches")))
 
   (design-rationale
-    (why-formdb-backend
-      "FormBase is not just another Airtable clone. By building on FormDB,
-       every cell change automatically has provenance, every operation is
-       reversible, and data quality can be scored. These are table stakes
-       for research, journalism, and any domain where trust matters.")
+    (why-lithoglyph-backend
+      "Glyphbase is not just another Airtable clone. By building on Lithoglyph,
+       every cell change is carved in stone with provenance, every operation is
+       mathematically reversible, and data quality can be scored via PROMPT.
+       These guarantees are essential for research, journalism, legal work,
+       and any domain where trust and auditability matter.")
+
+    (why-formal-verification
+      "Data management applications have a unique responsibility: users trust
+       them with critical information. By using Idris2 for formal verification,
+       we provide mathematical proofs that our CRUD operations are correct,
+       formulas are evaluated properly, and UI rendering cannot introduce
+       data corruption. This level of assurance is unprecedented in spreadsheet
+       software and sets a new standard for data integrity.")
 
     (why-offline-first
       "Most spreadsheet tools assume constant connectivity. FormBase uses

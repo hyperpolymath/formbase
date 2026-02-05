@@ -1,82 +1,102 @@
 ; SPDX-License-Identifier: PMPL-1.0-or-later
-; FormBase - Ecosystem Position
+; Glyphbase - Ecosystem Position
 
 (ecosystem
   (version "1.0")
-  (name "formbase")
+  (name "glyphbase")
   (type "application")
-  (purpose "Open-source Airtable alternative with provenance tracking")
+  (purpose "Open-source Airtable alternative with permanence and formal verification")
+  (formerly "formbase")
 
   (position-in-ecosystem
-    (role "End-user spreadsheet-database application")
+    (role "End-user spreadsheet-database application with provenance")
     (layer "Application layer")
-    (users "Non-technical users, researchers, teams, small businesses"))
+    (users "Non-technical users, researchers, teams, small businesses, scientists"))
 
   (related-projects
-    (project "formdb"
+    (project "lithoglyph"
       (relationship foundation)
-      (url "https://github.com/hyperpolymath/formdb")
-      (description "The narrative-first database that powers FormBase")
-      (integration "All data stored in FormDB with provenance"))
+      (url "https://github.com/hyperpolymath/lithoglyph")
+      (description "Stone-carved database engine with provenance and reversibility")
+      (integration "All data stored in Lithoglyph with full audit trail"))
 
-    (project "fqldt"
-      (relationship sibling-standard)
-      (url "https://github.com/hyperpolymath/fqldt")
-      (description "Dependently-typed query language")
-      (integration "Formulas may use FQLdt for type-checked expressions"))
+    (project "rescript-dom-mounter"
+      (relationship dependency)
+      (url "https://github.com/hyperpolymath/rescript-dom-mounter")
+      (description "High-assurance DOM rendering library")
+      (integration "Used for critical UI components requiring formal verification"))
 
-    (project "formdb-studio"
-      (relationship sibling-standard)
-      (url "https://github.com/hyperpolymath/formdb-studio")
-      (description "Admin GUI for FormDB")
-      (integration "FormBase for end-users, Studio for admins/developers"))
+    (project "proven"
+      (relationship dependency)
+      (url "https://github.com/hyperpolymath/proven")
+      (description "Idris2 formal verification library")
+      (integration "Type-level correctness proofs for data operations"))
 
-    (project "formdb-debugger"
+    (project "gql-dt"
       (relationship sibling-standard)
-      (url "https://github.com/hyperpolymath/formdb-debugger")
+      (url "https://github.com/hyperpolymath/gql-dt")
+      (description "Glyph Query Language with dependent types")
+      (integration "Advanced queries with type-level guarantees"))
+
+    (project "lithoglyph-studio"
+      (relationship sibling-standard)
+      (url "https://github.com/hyperpolymath/lithoglyph-studio")
+      (description "Admin GUI for Lithoglyph databases")
+      (integration "Glyphbase for end-users, Studio for admins/developers"))
+
+    (project "lithoglyph-debugger"
+      (relationship sibling-standard)
+      (url "https://github.com/hyperpolymath/lithoglyph-debugger")
       (description "Proof-carrying database debugger")
-      (integration "Debug and recover FormBase data with proofs"))
+      (integration "Debug and recover Glyphbase data with proofs"))
 
     (project "bofig"
       (relationship potential-consumer)
       (url "https://github.com/hyperpolymath/bofig")
       (description "Evidence graph for investigative journalism")
-      (integration "BoFIG could embed FormBase for evidence management"))
+      (integration "BoFIG could embed Glyphbase for evidence management"))
 
-    (project "zotero-formdb"
+    (project "zotero-formbd"
       (relationship sibling-standard)
-      (url "https://github.com/hyperpolymath/zotero-formdb")
+      (url "https://github.com/hyperpolymath/zotero-formbd")
       (description "Reference manager with PROMPT scores")
-      (integration "Shared PROMPT scoring system"))
+      (integration "Shared PROMPT scoring methodology"))
+
+    (project "airtable"
+      (relationship inspiration)
+      (url "https://airtable.com")
+      (description "Commercial spreadsheet-database hybrid")
+      (integration "UX inspiration for views and interface design"))
 
     (project "nocodb"
       (relationship inspiration)
       (url "https://github.com/nocodb/nocodb")
       (description "Open source Airtable alternative")
-      (integration "UX inspiration, not code sharing"))
+      (integration "Reference for open-source implementation patterns"))
 
     (project "baserow"
       (relationship inspiration)
       (url "https://github.com/bram2w/baserow")
-      (description "Self-hosted database")
-      (integration "UX inspiration, not code sharing"))
+      (description "Self-hosted no-code database")
+      (integration "Self-hosting deployment patterns"))
 
     (project "yjs"
       (relationship dependency)
       (url "https://github.com/yjs/yjs")
-      (description "CRDT framework for collaboration")
-      (integration "Real-time sync and offline support")))
+      (description "CRDT framework for real-time collaboration")
+      (integration "Conflict-free multi-user editing and offline support")))
 
   (what-this-is
     ("A spreadsheet-database hybrid for non-technical users")
-    ("An Airtable alternative with provenance built-in")
-    ("A self-hosted, offline-first data management tool")
-    ("A collaborative workspace with real-time sync")
-    ("A research-grade data collection platform with PROMPT scores"))
+    ("An Airtable alternative with permanence - every change carved in stone")
+    ("A self-hosted, offline-first data management platform")
+    ("A collaborative workspace with real-time sync via CRDTs")
+    ("A research-grade data platform with PROMPT quality scores")
+    ("A formally verified application using Idris2 correctness proofs"))
 
   (what-this-is-not
-    ("Not a replacement for Excel/Sheets (different use case)")
-    ("Not a general-purpose database admin tool (use FormDB Studio)")
-    ("Not a BI/analytics platform (use Metabase etc.)")
-    ("Not a form builder only (forms are one view type)")
-    ("Not a low-code app builder (focused on data, not apps)")))
+    ("Not a replacement for Excel/Sheets - different collaboration model")
+    ("Not a general-purpose database admin tool - use Lithoglyph Studio instead")
+    ("Not a BI/analytics platform - use Metabase or similar")
+    ("Not just a form builder - forms are one view type among many")
+    ("Not a low-code app builder - focused on data management, not app development")))

@@ -1,4 +1,5 @@
 image:https://img.shields.io/badge/License-PMPL--1.0-blue.svg[License: PMPL-1.0,link="https://github.com/hyperpolymath/palimpsest-license"]
+image:https://img.shields.io/badge/Powered_by-Idris-purple.svg[Powered by Idris,link="https://www.idris-lang.org/"]
 // SPDX-License-Identifier: PMPL-1.0-or-later
 // SPDX-FileCopyrightText: 2025 hyperpolymath
 
@@ -10,7 +11,7 @@ image:https://img.shields.io/badge/License-PMPL--1.0-blue.svg[License: PMPL-1.0,
 [.lead]
 *Carve your data in stone.*
 
-_The open-source Airtable alternative with permanence._
+_The open-source Airtable alternative with permanence, powered by formal verification._
 
 == What is Glyphbase?
 
@@ -69,6 +70,8 @@ _Coming soon_
 ----
 ┌─────────────────────────────────────────────────────────────┐
 │  Browser UI (ReScript + React)                              │
+│  • rescript-dom-mounter (high-assurance rendering)          │
+│  • Proven library integration (Idris formal verification)   │
 │  Grid | Kanban | Calendar | Gallery | Form Builder          │
 ├─────────────────────────────────────────────────────────────┤
 │  Real-time Collaboration (WebSocket + Yjs CRDT)             │
@@ -76,8 +79,11 @@ _Coming soon_
 │  API Server (Gleam on BEAM)                                 │
 │  REST + WebSocket + Automations                             │
 ├─────────────────────────────────────────────────────────────┤
-│  Lithoglyph Engine                                              │
+│  Lithoglyph Engine                                          │
 │  Provenance | Reversibility | PROMPT Scores                 │
+├─────────────────────────────────────────────────────────────┤
+│  Formal Verification Layer (Idris2)                         │
+│  Type-level guarantees | Correctness proofs                 │
 ├─────────────────────────────────────────────────────────────┤
 │  Storage: Local | Dropbox | GDrive | S3                     │
 └─────────────────────────────────────────────────────────────┘
@@ -260,6 +266,12 @@ Link records to canonical sources. DOI-linked records are immutable; edits creat
 
 | UI Framework
 | ReScript + React
+
+| High-Assurance Rendering
+| link:https://github.com/hyperpolymath/rescript-dom-mounter[rescript-dom-mounter]
+
+| Formal Verification
+| link:https://github.com/hyperpolymath/proven[Proven] (Idris2 proofs)
 
 | State Management
 | Jotai
