@@ -3,7 +3,7 @@
 name = "glyphbase_server"
 version = "0.1.0"
 description = "Glyphbase API server"
-licences = ["AGPL-3.0-or-later"]
+licences = ["PMPL-1.0-or-later"]
 repository = { type = "github", user = "hyperpolymath", repo = "glyphbase" }
 
 [dependencies]

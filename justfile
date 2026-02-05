@@ -1,5 +1,5 @@
-# SPDX-License-Identifier: AGPL-3.0-or-later
-# FormBase - Build Commands
+# SPDX-License-Identifier: PMPL-1.0-or-later
+# Glyphbase - Build Commands
 
 # Default recipe
 default:
@@ -7,7 +7,7 @@ default:
 
 # Development - run both UI and server
 dev:
-    @echo "Starting FormBase development servers..."
+    @echo "Starting Glyphbase development servers..."
     @just dev-server &
     @just dev-ui
 
@@ -61,11 +61,11 @@ clean:
 
 # Docker build
 docker-build:
-    podman build -t formbase:latest .
+    podman build -t glyphbase:latest .
 
 # Docker run
 docker-run:
-    podman run -p 3000:3000 -p 8080:8080 formbase:latest
+    podman run -p 4000:4000 -v ./data:/data glyphbase:latest
 
 # Full docker-compose stack
 up:
