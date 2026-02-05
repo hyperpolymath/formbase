@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: AGPL-3.0-or-later
+// SPDX-License-Identifier: PMPL-1.0-or-later
 // State management for the grid view
 
 open Types
@@ -179,6 +179,36 @@ let applyFilters = (
       | #And => results->Array.every(r => r)
       | #Or => results->Array.some(r => r)
       }
+    })
+  }
+}
+
+// Search configuration
+let searchTermAtom: Jotai.atom<string> = Jotai.atom("")
+
+// Apply search to rows (searches across all cells)
+let applySearch = (rows: array<row>, searchTerm: string): array<row> => {
+  if searchTerm->String.trim == "" {
+    rows
+  } else {
+    let lowerSearchTerm = searchTerm->String.toLowerCase->String.trim
+    rows->Array.filter(row => {
+      // Check if any cell in the row matches the search term
+      row.cells
+      ->Dict.values
+      ->Array.some(cell => {
+        let strValue = switch cell.value {
+        | TextValue(s) => s
+        | NumberValue(n) => Float.toString(n)
+        | SelectValue(s) => s
+        | MultiSelectValue(arr) => arr->Array.join(" ")
+        | DateValue(d) => Date.toISOString(d)->String.slice(~start=0, ~end=10)
+        | CheckboxValue(b) => b ? "checked" : "unchecked"
+        | NullValue => ""
+        | _ => ""
+        }
+        strValue->String.toLowerCase->String.includes(lowerSearchTerm)
+      })
     })
   }
 }

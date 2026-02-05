@@ -271,6 +271,8 @@ module Toolbar = {
     ~hiddenCount: int,
     ~onToggleHideFields: unit => unit,
     ~showHideFields: bool,
+    ~searchTerm: string,
+    ~onSearchChange: string => unit,
   ) => {
     <div className="toolbar">
       <button
@@ -295,7 +297,16 @@ module Toolbar = {
       </button>
       <button className="toolbar-button"> {React.string("Sort")} </button>
       <button className="toolbar-button"> {React.string("Group")} </button>
-      <input type_="search" className="toolbar-search" placeholder="Search..." />
+      <input
+        type_="search"
+        className="toolbar-search"
+        placeholder="Search..."
+        value={searchTerm}
+        onChange={evt => {
+          let value = evt->ReactEvent.Form.target["value"]
+          onSearchChange(value)
+        }}
+      />
     </div>
   }
 }
@@ -307,11 +318,13 @@ let make = () => {
   let (filterConjunction, _setFilterConjunction) = Jotai.useAtom(GridStore.filterConjunctionAtom)
   let (sortConfig, setSortConfig) = Jotai.useAtom(GridStore.sortConfigAtom)
   let (hiddenColumns, setHiddenColumns) = Jotai.useAtom(GridStore.hiddenColumnsAtom)
+  let (searchTerm, setSearchTerm) = Jotai.useAtom(GridStore.searchTermAtom)
   let (showFilterPanel, setShowFilterPanel) = React.useState(() => false)
   let (showHideFieldsPanel, setShowHideFieldsPanel) = React.useState(() => false)
 
-  // Apply filters and sorting to get visible rows
-  let filteredRows = GridStore.applyFilters(rows, filters, filterConjunction)
+  // Apply search, filters, and sorting to get visible rows
+  let searchedRows = GridStore.applySearch(rows, searchTerm)
+  let filteredRows = GridStore.applyFilters(searchedRows, filters, filterConjunction)
   let sortedRows = GridStore.applySort(filteredRows, sortConfig)
 
   // Filter handlers
@@ -501,6 +514,8 @@ let make = () => {
             hiddenCount={Array.length(hiddenColumns)}
             onToggleHideFields={handleToggleHideFieldsPanel}
             showHideFields={showHideFieldsPanel}
+            searchTerm={searchTerm}
+            onSearchChange={setSearchTerm}
           />
           {if showHideFieldsPanel {
             <HideFieldsPanel
