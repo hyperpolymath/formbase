@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: AGPL-3.0-or-later
+// SPDX-License-Identifier: PMPL-1.0-or-later
 // State management for bases and tables
 
 open Types
@@ -20,3 +20,35 @@ let isLoadingAtom: Jotai.atom<bool> = Jotai.atom(false)
 
 // Error state
 let errorAtom: Jotai.atom<option<string>> = Jotai.atom(None)
+
+// Helper functions for base/table management
+let createBase = (name: string, icon: option<string>): base => {
+  let id = "base_" ++ Float.toString(Date.now())
+  {
+    id,
+    name,
+    icon,
+    tables: [],
+    views: [],
+    createdAt: Date.toISOString(Date.make()),
+    updatedAt: Date.toISOString(Date.make()),
+  }
+}
+
+let createTable = (baseId: string, name: string, primaryFieldId: string): table => {
+  let id = "tbl_" ++ Float.toString(Date.now())
+  {
+    id,
+    name,
+    primaryFieldId,
+    fields: [],
+  }
+}
+
+let addTableToBase = (base: base, table: table): base => {
+  {...base, tables: Array.concat(base.tables, [table])}
+}
+
+let removeTableFromBase = (base: base, tableId: string): base => {
+  {...base, tables: base.tables->Array.filter(t => t.id != tableId)}
+}
