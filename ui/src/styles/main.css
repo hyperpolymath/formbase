@@ -2,6 +2,7 @@
 /* Glyphbase - Main Styles */
 
 @import './kanban.css';
+@import './calendar.css';
 
 :root {
   --color-bg: #ffffff;

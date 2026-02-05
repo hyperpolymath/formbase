@@ -48,12 +48,56 @@ Import the Kanban CSS in your main application:
 import './styles/kanban.css';
 ```
 
-## Future Views
+## CalendarView
 
-### CalendarView (v0.3.0)
-- Display rows as events on a calendar
-- Group by date field
-- Month/week/day views
+Calendar view with month/week/day modes for displaying date-based data.
+
+### Usage
+
+```rescript
+<CalendarView
+  tableId="table-123"
+  dateFieldId="due-date-field-id"
+  rows={allRows}
+  fields={tableFields}
+  onEventClick={row => {
+    // Handle event click
+    Console.log(row.id)
+  }}
+/>
+```
+
+### Features
+
+- ✅ Month view with calendar grid
+- ✅ Week/Day view switcher (coming soon)
+- ✅ Event cards on calendar days
+- ✅ Navigation (previous/next month, today)
+- ✅ Today highlighting
+- ✅ Up to 3 events per day with "+N more" indicator
+- ✅ Event click handler support
+- ✅ Primary field as event title
+- ✅ Responsive design
+
+### Props
+
+| Prop | Type | Description |
+|------|------|-------------|
+| `tableId` | `string` | ID of the table being viewed |
+| `dateFieldId` | `string` | ID of the Date field to display events |
+| `rows` | `array<row>` | Array of rows to display as events |
+| `fields` | `array<fieldConfig>` | Array of field configurations |
+| `onEventClick` | `option<row => unit>` | Optional callback when event is clicked |
+
+### Styling
+
+Import the Calendar CSS in your main application:
+
+```javascript
+import './styles/calendar.css';
+```
+
+## Future Views
 
 ### GalleryView (v0.3.0)
 - Card-based layout with images
