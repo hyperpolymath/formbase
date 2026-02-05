@@ -61,17 +61,90 @@ let demoRows: array<row> = [
 
 module Sidebar = {
   @react.component
-  let make = () => {
+  let make = (
+    ~bases: array<base>,
+    ~currentBase: option<base>,
+    ~onSelectBase: string => unit,
+    ~onCreateBase: unit => unit,
+    ~onDeleteBase: string => unit,
+    ~onCreateTable: unit => unit,
+    ~onDeleteTable: string => unit,
+  ) => {
     <aside className="sidebar">
       <div className="sidebar-section">
-        <h3> {React.string("Bases")} </h3>
-        <div className="sidebar-item active"> {React.string("Demo Base")} </div>
+        <div style={{display: "flex", justifyContent: "space-between", alignItems: "center"}}>
+          <h3> {React.string("Bases")} </h3>
+          <button
+            className="sidebar-add-button"
+            onClick={_ => onCreateBase()}
+            title="New Base">
+            {React.string("+")}
+          </button>
+        </div>
+        {if Array.length(bases) == 0 {
+          <div className="sidebar-empty"> {React.string("No bases yet")} </div>
+        } else {
+          bases
+          ->Array.map(base => {
+            let isActive = switch currentBase {
+            | Some(cb) => cb.id == base.id
+            | None => false
+            }
+            <div key={base.id} style={{display: "flex", alignItems: "center", gap: "4px"}}>
+              <div
+                className={"sidebar-item" ++ (isActive ? " active" : "")}
+                onClick={_ => onSelectBase(base.id)}
+                style={{flex: "1"}}>
+                {switch base.icon {
+                | Some(icon) => <span> {React.string(icon ++ " ")} </span>
+                | None => React.null
+                }}
+                {React.string(base.name)}
+              </div>
+              <button
+                className="sidebar-delete-button"
+                onClick={_ => onDeleteBase(base.id)}
+                title="Delete base">
+                {React.string("×")}
+              </button>
+            </div>
+          })
+          ->React.array
+        }}
       </div>
       <div className="sidebar-section">
-        <h3> {React.string("Tables")} </h3>
-        <div className="sidebar-item active"> {React.string("Projects")} </div>
-        <div className="sidebar-item"> {React.string("Tasks")} </div>
-        <div className="sidebar-item"> {React.string("Team")} </div>
+        <div style={{display: "flex", justifyContent: "space-between", alignItems: "center"}}>
+          <h3> {React.string("Tables")} </h3>
+          <button
+            className="sidebar-add-button"
+            onClick={_ => onCreateTable()}
+            title="New Table">
+            {React.string("+")}
+          </button>
+        </div>
+        {switch currentBase {
+        | Some(base) =>
+          if Array.length(base.tables) == 0 {
+            <div className="sidebar-empty"> {React.string("No tables yet")} </div>
+          } else {
+            base.tables
+            ->Array.map(table => {
+              <div key={table.id} style={{display: "flex", alignItems: "center", gap: "4px"}}>
+                <div className="sidebar-item" style={{flex: "1"}}>
+                  {React.string(table.name)}
+                </div>
+                <button
+                  className="sidebar-delete-button"
+                  onClick={_ => onDeleteTable(table.id)}
+                  title="Delete table">
+                  {React.string("×")}
+                </button>
+              </div>
+            })
+            ->React.array
+          }
+        | None => <div className="sidebar-empty"> {React.string("Select a base first")} </div>
+        }}
       </div>
     </aside>
   }
@@ -323,6 +396,29 @@ let make = () => {
   let (showFilterPanel, setShowFilterPanel) = React.useState(() => false)
   let (showHideFieldsPanel, setShowHideFieldsPanel) = React.useState(() => false)
 
+  // Base and table management
+  let (bases, setBases) = Jotai.useAtom(BaseStore.basesAtom)
+  let (currentBase, setCurrentBase) = Jotai.useAtom(BaseStore.currentBaseAtom)
+  let (showCreateBaseModal, setShowCreateBaseModal) = React.useState(() => false)
+  let (showCreateTableModal, setShowCreateTableModal) = React.useState(() => false)
+  let (showDeleteBaseModal, setShowDeleteBaseModal) = React.useState(() => false)
+  let (showDeleteTableModal, setShowDeleteTableModal) = React.useState(() => false)
+  let (baseToDelete, setBaseToDelete) = React.useState(() => None)
+  let (tableToDelete, setTableToDelete) = React.useState(() => None)
+  let (newBaseName, setNewBaseName) = React.useState(() => "")
+  let (newTableName, setNewTableName) = React.useState(() => "")
+
+  // Initialize with demo base if no bases exist
+  React.useEffect1(() => {
+    if Array.length(bases) == 0 {
+      let demoBase = BaseStore.createBase("Demo Base", Some("📊"))
+      let demoTableWithBase = BaseStore.addTableToBase(demoBase, demoTable)
+      setBases(_ => [demoTableWithBase])
+      setCurrentBase(_ => Some(demoTableWithBase))
+    }
+    None
+  }, [])
+
   // Apply search, filters, and sorting to get visible rows
   let searchedRows = GridStore.applySearch(rows, searchTerm)
   let filteredRows = GridStore.applyFilters(searchedRows, filters, filterConjunction)
@@ -377,6 +473,77 @@ let make = () => {
         Some({GridStore.fieldId: fieldId, direction: #Asc})
       }
     })
+  }
+
+  // Base management handlers
+  let handleSelectBase = (baseId: string) => {
+    let selected = bases->Array.find(b => b.id == baseId)
+    setCurrentBase(_ => selected)
+  }
+
+  let handleCreateBase = () => {
+    if newBaseName->String.trim != "" {
+      let newBase = BaseStore.createBase(newBaseName, None)
+      setBases(prev => Array.concat(prev, [newBase]))
+      setNewBaseName(_ => "")
+      setShowCreateBaseModal(_ => false)
+      setCurrentBase(_ => Some(newBase))
+    }
+  }
+
+  let handleDeleteBase = (baseId: string) => {
+    setBaseToDelete(_ => Some(baseId))
+    setShowDeleteBaseModal(_ => true)
+  }
+
+  let confirmDeleteBase = () => {
+    switch baseToDelete {
+    | Some(baseId) => {
+        setBases(prev => prev->Array.filter(b => b.id != baseId))
+        // If deleting current base, clear selection
+        switch currentBase {
+        | Some(cb) if cb.id == baseId => setCurrentBase(_ => None)
+        | _ => ()
+        }
+        setShowDeleteBaseModal(_ => false)
+        setBaseToDelete(_ => None)
+      }
+    | None => ()
+    }
+  }
+
+  // Table management handlers
+  let handleCreateTable = () => {
+    switch currentBase {
+    | Some(base) =>
+      if newTableName->String.trim != "" {
+        let newTable = BaseStore.createTable(base.id, newTableName, "fld_name")
+        let updatedBase = BaseStore.addTableToBase(base, newTable)
+        setBases(prev => prev->Array.map(b => b.id == base.id ? updatedBase : b))
+        setCurrentBase(_ => Some(updatedBase))
+        setNewTableName(_ => "")
+        setShowCreateTableModal(_ => false)
+      }
+    | None => Console.log("No base selected")
+    }
+  }
+
+  let handleDeleteTable = (tableId: string) => {
+    setTableToDelete(_ => Some(tableId))
+    setShowDeleteTableModal(_ => true)
+  }
+
+  let confirmDeleteTable = () => {
+    switch (currentBase, tableToDelete) {
+    | (Some(base), Some(tableId)) => {
+        let updatedBase = BaseStore.removeTableFromBase(base, tableId)
+        setBases(prev => prev->Array.map(b => b.id == base.id ? updatedBase : b))
+        setCurrentBase(_ => Some(updatedBase))
+        setShowDeleteTableModal(_ => false)
+        setTableToDelete(_ => None)
+      }
+    | _ => ()
+    }
   }
 
   // Convert cellValue to JSON for API
@@ -632,7 +799,15 @@ let make = () => {
         <p> {React.string("Open-source Airtable alternative with provenance tracking")} </p>
       </header>
       <main className="formbase-main">
-        <Sidebar />
+        <Sidebar
+          bases={bases}
+          currentBase={currentBase}
+          onSelectBase={handleSelectBase}
+          onCreateBase={() => setShowCreateBaseModal(_ => true)}
+          onDeleteBase={handleDeleteBase}
+          onCreateTable={() => setShowCreateTableModal(_ => true)}
+          onDeleteTable={handleDeleteTable}
+        />
         <div style={{display: "flex", flexDirection: "column", flex: "1"}}>
           <ViewTabs />
           <Toolbar
@@ -665,6 +840,124 @@ let make = () => {
           <Grid table={demoTable} rows={sortedRows} onCellUpdate={handleCellUpdate} onAddRow={handleAddRow} onDeleteRow={handleDeleteRow} sortConfig onSort={handleSort} hiddenColumns />
         </div>
       </main>
+      {/* Create Base Modal */}
+      <Modal
+        isOpen={showCreateBaseModal}
+        onClose={() => setShowCreateBaseModal(_ => false)}
+        title="Create New Base">
+        <div className="modal-form">
+          <div className="modal-form-group">
+            <label className="modal-form-label"> {React.string("Base Name")} </label>
+            <input
+              type_="text"
+              className="modal-form-input"
+              placeholder="My Base"
+              value={newBaseName}
+              onChange={evt => {
+                let value = evt->ReactEvent.Form.target["value"]
+                setNewBaseName(_ => value)
+              }}
+              onKeyDown={evt => {
+                if evt->ReactEvent.Keyboard.key == "Enter" {
+                  handleCreateBase()
+                }
+              }}
+            />
+          </div>
+          <div className="modal-form-actions">
+            <button
+              className="modal-button"
+              onClick={_ => setShowCreateBaseModal(_ => false)}>
+              {React.string("Cancel")}
+            </button>
+            <button
+              className="modal-button modal-button-primary"
+              onClick={_ => handleCreateBase()}>
+              {React.string("Create")}
+            </button>
+          </div>
+        </div>
+      </Modal>
+      {/* Create Table Modal */}
+      <Modal
+        isOpen={showCreateTableModal}
+        onClose={() => setShowCreateTableModal(_ => false)}
+        title="Create New Table">
+        <div className="modal-form">
+          <div className="modal-form-group">
+            <label className="modal-form-label"> {React.string("Table Name")} </label>
+            <input
+              type_="text"
+              className="modal-form-input"
+              placeholder="My Table"
+              value={newTableName}
+              onChange={evt => {
+                let value = evt->ReactEvent.Form.target["value"]
+                setNewTableName(_ => value)
+              }}
+              onKeyDown={evt => {
+                if evt->ReactEvent.Keyboard.key == "Enter" {
+                  handleCreateTable()
+                }
+              }}
+            />
+          </div>
+          <div className="modal-form-actions">
+            <button
+              className="modal-button"
+              onClick={_ => setShowCreateTableModal(_ => false)}>
+              {React.string("Cancel")}
+            </button>
+            <button
+              className="modal-button modal-button-primary"
+              onClick={_ => handleCreateTable()}>
+              {React.string("Create")}
+            </button>
+          </div>
+        </div>
+      </Modal>
+      {/* Delete Base Modal */}
+      <Modal
+        isOpen={showDeleteBaseModal}
+        onClose={() => setShowDeleteBaseModal(_ => false)}
+        title="Delete Base">
+        <div className="modal-form">
+          <p> {React.string("Are you sure you want to delete this base and all its tables?")} </p>
+          <div className="modal-form-actions">
+            <button
+              className="modal-button"
+              onClick={_ => setShowDeleteBaseModal(_ => false)}>
+              {React.string("Cancel")}
+            </button>
+            <button
+              className="modal-button modal-button-danger"
+              onClick={_ => confirmDeleteBase()}>
+              {React.string("Delete")}
+            </button>
+          </div>
+        </div>
+      </Modal>
+      {/* Delete Table Modal */}
+      <Modal
+        isOpen={showDeleteTableModal}
+        onClose={() => setShowDeleteTableModal(_ => false)}
+        title="Delete Table">
+        <div className="modal-form">
+          <p> {React.string("Are you sure you want to delete this table?")} </p>
+          <div className="modal-form-actions">
+            <button
+              className="modal-button"
+              onClick={_ => setShowDeleteTableModal(_ => false)}>
+              {React.string("Cancel")}
+            </button>
+            <button
+              className="modal-button modal-button-danger"
+              onClick={_ => confirmDeleteTable()}>
+              {React.string("Delete")}
+            </button>
+          </div>
+        </div>
+      </Modal>
     </div>
   </Jotai.Provider>
 }
