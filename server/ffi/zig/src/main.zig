@@ -9,18 +9,96 @@ const c = @cImport({
     @cInclude("erl_nif.h");
 });
 
-// Import Lithoglyph core library
-const lithoglyph = @import("lithoglyph");
-const FdbDb = lithoglyph.FdbDb;
-const FdbTxn = lithoglyph.FdbTxn;
-const FdbStatus = lithoglyph.types.FdbStatus;
-const FdbTxnMode = lithoglyph.types.FdbTxnMode;
-const FdbBlob = lithoglyph.types.FdbBlob;
-const FdbResult = lithoglyph.types.FdbResult;
+// Opaque handle types (matching Idris2 ABI and Lithoglyph)
+const FdbDb = opaque {};
+const FdbTxn = opaque {};
 
-// Opaque handle types (matching Idris2 ABI)
 const DbHandle = FdbDb;
 const TxnHandle = FdbTxn;
+
+// Lithoglyph types (C ABI compatible)
+const FdbStatus = enum(i32) {
+    ok = 0,
+    err_db_not_found = 1001,
+    err_db_already_open = 1002,
+    err_txn_not_active = 2001,
+    err_txn_already_committed = 2002,
+    err_invalid_argument = 9003,
+    err_internal = 9001,
+    err_out_of_memory = 9002,
+    err_not_implemented = 9004,
+};
+
+const FdbTxnMode = enum(u8) {
+    read_only = 0,
+    read_write = 1,
+};
+
+const BlobEncoding = enum(u8) {
+    cbor = 0,
+    cbor_compressed = 1,
+    reserved = 255,
+};
+
+const FdbBlob = extern struct {
+    data: ?[*]const u8,
+    len: usize,
+    encoding: BlobEncoding,
+    _padding: [7]u8,
+
+    fn empty() FdbBlob {
+        return .{
+            .data = null,
+            .len = 0,
+            .encoding = .cbor,
+            ._padding = [_]u8{0} ** 7,
+        };
+    }
+
+    fn toSlice(self: FdbBlob) ?[]const u8 {
+        if (self.data) |ptr| {
+            return ptr[0..self.len];
+        }
+        return null;
+    }
+};
+
+const FdbResult = extern struct {
+    result_blob: FdbBlob,
+    provenance_blob: FdbBlob,
+    status: FdbStatus,
+    _padding: [4]u8,
+    err_blob: FdbBlob,
+};
+
+// Extern declarations for Lithoglyph C API
+extern fn fdb_db_open(
+    path_ptr: [*]const u8,
+    path_len: usize,
+    opts_ptr: ?[*]const u8,
+    opts_len: usize,
+    out_db: *?*FdbDb,
+    out_err: *FdbBlob,
+) FdbStatus;
+
+extern fn fdb_db_close(db: ?*FdbDb) FdbStatus;
+
+extern fn fdb_txn_begin(
+    db: ?*FdbDb,
+    mode: FdbTxnMode,
+    out_txn: *?*FdbTxn,
+    out_err: *FdbBlob,
+) FdbStatus;
+
+extern fn fdb_txn_commit(txn: ?*FdbTxn, out_err: *FdbBlob) FdbStatus;
+
+extern fn fdb_txn_abort(txn: ?*FdbTxn) FdbStatus;
+
+extern fn fdb_apply(
+    txn: ?*FdbTxn,
+    op_ptr: [*]const u8,
+    op_len: usize,
+) FdbResult;
 
 // Version struct (matching Idris2 Version record)
 const Version = extern struct {
@@ -59,7 +137,7 @@ export fn formdb_nif_db_open(path: [*:0]const u8) ?*DbHandle {
     var out_db: ?*FdbDb = null;
     var out_err: FdbBlob = undefined;
 
-    const status = lithoglyph.fdb_db_open(
+    const status = fdb_db_open(
         path_slice.ptr,
         path_slice.len,
         null, // opts_ptr
@@ -82,7 +160,7 @@ export fn formdb_nif_db_open(path: [*:0]const u8) ?*DbHandle {
 /// Close database connection
 /// Returns: 0 on success, -1 on error
 export fn formdb_nif_db_close(handle: *DbHandle) c_int {
-    const status = lithoglyph.fdb_db_close(handle);
+    const status = fdb_db_close(handle);
     return if (status == .ok) 0 else -1;
 }
 
@@ -95,7 +173,7 @@ export fn formdb_nif_txn_begin(handle: *DbHandle, mode_int: u32) ?*TxnHandle {
     var out_txn: ?*FdbTxn = null;
     var out_err: FdbBlob = undefined;
 
-    const status = lithoglyph.fdb_txn_begin(
+    const status = fdb_txn_begin(
         handle,
         mode,
         &out_txn,
@@ -116,7 +194,7 @@ export fn formdb_nif_txn_begin(handle: *DbHandle, mode_int: u32) ?*TxnHandle {
 /// Returns: 0 on success, -1 on error
 export fn formdb_nif_txn_commit(handle: *TxnHandle) c_int {
     var out_err: FdbBlob = undefined;
-    const status = lithoglyph.fdb_txn_commit(handle, &out_err);
+    const status = fdb_txn_commit(handle, &out_err);
 
     if (status != .ok) {
         if (out_err.toSlice()) |err_slice| {
@@ -131,7 +209,7 @@ export fn formdb_nif_txn_commit(handle: *TxnHandle) c_int {
 /// Abort transaction
 /// Returns: 0 on success, -1 on error
 export fn formdb_nif_txn_abort(handle: *TxnHandle) c_int {
-    const status = lithoglyph.fdb_txn_abort(handle);
+    const status = fdb_txn_abort(handle);
     return if (status == .ok) 0 else -1;
 }
 
@@ -148,7 +226,7 @@ export fn formdb_nif_apply(
     provenance_buffer: [*]u8,
 ) c_int {
     // Call Lithoglyph apply
-    const result = lithoglyph.fdb_apply(
+    const result = fdb_apply(
         handle,
         op_buffer,
         op_length,
@@ -258,7 +336,7 @@ const nif_funcs = [_]c.ErlNifFunc{
 };
 
 // Erlang NIF wrapper functions
-fn nif_version(env: ?*c.ErlNifEnv, argc: c_int, argv: [*c]const c.ERL_NIF_TERM) callconv(.C) c.ERL_NIF_TERM {
+fn nif_version(env: ?*c.ErlNifEnv, argc: c_int, argv: [*c]const c.ERL_NIF_TERM) callconv(.c) c.ERL_NIF_TERM {
     _ = argc;
     _ = argv;
 
@@ -276,7 +354,7 @@ fn nif_version(env: ?*c.ErlNifEnv, argc: c_int, argv: [*c]const c.ERL_NIF_TERM) 
     );
 }
 
-fn nif_db_open(env: ?*c.ErlNifEnv, argc: c_int, argv: [*c]const c.ERL_NIF_TERM) callconv(.C) c.ERL_NIF_TERM {
+fn nif_db_open(env: ?*c.ErlNifEnv, argc: c_int, argv: [*c]const c.ERL_NIF_TERM) callconv(.c) c.ERL_NIF_TERM {
     _ = argc;
 
     var path_binary: c.ErlNifBinary = undefined;
@@ -307,49 +385,49 @@ fn nif_db_open(env: ?*c.ErlNifEnv, argc: c_int, argv: [*c]const c.ERL_NIF_TERM) 
     }
 }
 
-fn nif_db_close(env: ?*c.ErlNifEnv, argc: c_int, argv: [*c]const c.ERL_NIF_TERM) callconv(.C) c.ERL_NIF_TERM {
+fn nif_db_close(env: ?*c.ErlNifEnv, argc: c_int, argv: [*c]const c.ERL_NIF_TERM) callconv(.c) c.ERL_NIF_TERM {
     _ = argc;
     _ = argv;
     // TODO: Extract resource handle from argv[0]
     return c.enif_make_atom(env, "ok");
 }
 
-fn nif_txn_begin(env: ?*c.ErlNifEnv, argc: c_int, argv: [*c]const c.ERL_NIF_TERM) callconv(.C) c.ERL_NIF_TERM {
+fn nif_txn_begin(env: ?*c.ErlNifEnv, argc: c_int, argv: [*c]const c.ERL_NIF_TERM) callconv(.c) c.ERL_NIF_TERM {
     _ = argc;
     _ = argv;
     // TODO: Implement NIF wrapper
     return c.enif_make_atom(env, "ok");
 }
 
-fn nif_txn_commit(env: ?*c.ErlNifEnv, argc: c_int, argv: [*c]const c.ERL_NIF_TERM) callconv(.C) c.ERL_NIF_TERM {
+fn nif_txn_commit(env: ?*c.ErlNifEnv, argc: c_int, argv: [*c]const c.ERL_NIF_TERM) callconv(.c) c.ERL_NIF_TERM {
     _ = argc;
     _ = argv;
     // TODO: Implement NIF wrapper
     return c.enif_make_atom(env, "ok");
 }
 
-fn nif_txn_abort(env: ?*c.ErlNifEnv, argc: c_int, argv: [*c]const c.ERL_NIF_TERM) callconv(.C) c.ERL_NIF_TERM {
+fn nif_txn_abort(env: ?*c.ErlNifEnv, argc: c_int, argv: [*c]const c.ERL_NIF_TERM) callconv(.c) c.ERL_NIF_TERM {
     _ = argc;
     _ = argv;
     // TODO: Implement NIF wrapper
     return c.enif_make_atom(env, "ok");
 }
 
-fn nif_apply(env: ?*c.ErlNifEnv, argc: c_int, argv: [*c]const c.ERL_NIF_TERM) callconv(.C) c.ERL_NIF_TERM {
+fn nif_apply(env: ?*c.ErlNifEnv, argc: c_int, argv: [*c]const c.ERL_NIF_TERM) callconv(.c) c.ERL_NIF_TERM {
     _ = argc;
     _ = argv;
     // TODO: Implement NIF wrapper
     return c.enif_make_atom(env, "ok");
 }
 
-fn nif_schema(env: ?*c.ErlNifEnv, argc: c_int, argv: [*c]const c.ERL_NIF_TERM) callconv(.C) c.ERL_NIF_TERM {
+fn nif_schema(env: ?*c.ErlNifEnv, argc: c_int, argv: [*c]const c.ERL_NIF_TERM) callconv(.c) c.ERL_NIF_TERM {
     _ = argc;
     _ = argv;
     // TODO: Implement NIF wrapper
     return c.enif_make_atom(env, "ok");
 }
 
-fn nif_journal(env: ?*c.ErlNifEnv, argc: c_int, argv: [*c]const c.ERL_NIF_TERM) callconv(.C) c.ERL_NIF_TERM {
+fn nif_journal(env: ?*c.ErlNifEnv, argc: c_int, argv: [*c]const c.ERL_NIF_TERM) callconv(.c) c.ERL_NIF_TERM {
     _ = argc;
     _ = argv;
     // TODO: Implement NIF wrapper
@@ -357,7 +435,7 @@ fn nif_journal(env: ?*c.ErlNifEnv, argc: c_int, argv: [*c]const c.ERL_NIF_TERM) 
 }
 
 // NIF load function
-fn nif_load(env: ?*c.ErlNifEnv, priv_data: [*c]?*anyopaque, load_info: c.ERL_NIF_TERM) callconv(.C) c_int {
+fn nif_load(env: ?*c.ErlNifEnv, priv_data: [*c]?*anyopaque, load_info: c.ERL_NIF_TERM) callconv(.c) c_int {
     _ = env;
     _ = priv_data;
     _ = load_info;
@@ -366,7 +444,7 @@ fn nif_load(env: ?*c.ErlNifEnv, priv_data: [*c]?*anyopaque, load_info: c.ERL_NIF
 }
 
 // NIF unload function
-fn nif_unload(env: ?*c.ErlNifEnv, priv_data: ?*anyopaque) callconv(.C) void {
+fn nif_unload(env: ?*c.ErlNifEnv, priv_data: ?*anyopaque) callconv(.c) void {
     _ = env;
     _ = priv_data;
     // Cleanup if needed
@@ -378,7 +456,7 @@ export const formdb_nif_entry = c.ErlNifEntry{
     .minor = c.ERL_NIF_MINOR_VERSION,
     .name = "formdb_nif",
     .num_of_funcs = nif_funcs.len,
-    .funcs = &nif_funcs,
+    .funcs = @ptrCast(@constCast(&nif_funcs)),
     .load = nif_load,
     .reload = null,
     .upgrade = null,

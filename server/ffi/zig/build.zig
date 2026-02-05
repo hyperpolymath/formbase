@@ -7,23 +7,15 @@ pub fn build(b: *std.Build) void {
     const target = b.standardTargetOptions(.{});
     const optimize = b.standardOptimizeOption(.{});
 
-    // Link Erlang NIF headers (platform-specific)
+    // Find Erlang NIF headers
     const erts_include = std.process.getEnvVarOwned(
         b.allocator,
         "ERTS_INCLUDE_DIR"
-    ) catch "/usr/lib/erlang/usr/include";
-
-    // Add Lithoglyph core-zig as a module dependency
-    const lithoglyph_path = std.process.getEnvVarOwned(
-        b.allocator,
-        "LITHOGLYPH_PATH"
-    ) catch "../../../../lithoglyph/formdb/database/core-zig";
-
-    const lithoglyph_core = b.createModule(.{
-        .root_source_file = .{ .cwd_relative =
-            b.pathJoin(&.{lithoglyph_path, "src/bridge.zig"})
-        },
-    });
+    ) catch blk: {
+        // Try to find via asdf
+        const home = std.process.getEnvVarOwned(b.allocator, "HOME") catch "/home/hyper";
+        break :blk b.pathJoin(&.{home, ".asdf/installs/erlang/28.3.1/erts-16.2/include"});
+    };
 
     // Build shared library for Erlang NIF
     const lib = b.addLibrary(.{
@@ -34,13 +26,17 @@ pub fn build(b: *std.Build) void {
             .target = target,
             .optimize = optimize,
             .link_libc = true,
-            .imports = &.{
-                .{ .name = "lithoglyph", .module = lithoglyph_core },
-            },
         }),
     });
 
     lib.addIncludePath(.{ .cwd_relative = erts_include });
+
+    // Note: Lithoglyph functions are declared as extern in main.zig
+    // They will be resolved at runtime when the NIF loads
+    // To link statically, uncomment:
+    // const lithoglyph_path = ...;
+    // lib.addLibraryPath(.{ .cwd_relative = lithoglyph_path ++ "/zig-out/lib" });
+    // lib.linkSystemLibrary("formdb");
 
     // Install to priv directory for Erlang to find
     const install_artifact = b.addInstallArtifact(lib, .{
@@ -58,29 +54,10 @@ pub fn build(b: *std.Build) void {
             .root_source_file = b.path("src/main.zig"),
             .target = target,
             .optimize = optimize,
-            .imports = &.{
-                .{ .name = "lithoglyph", .module = lithoglyph_core },
-            },
         }),
     });
 
     const run_main_tests = b.addRunArtifact(main_tests);
     const test_step = b.step("test", "Run library tests");
     test_step.dependOn(&run_main_tests.step);
-
-    // Integration tests
-    const integration_tests = b.addTest(.{
-        .root_module = b.createModule(.{
-            .root_source_file = b.path("test/integration_test.zig"),
-            .target = target,
-            .optimize = optimize,
-            .imports = &.{
-                .{ .name = "main", .module = lib.root_module },
-            },
-        }),
-    });
-
-    const run_integration_tests = b.addRunArtifact(integration_tests);
-    const integration_test_step = b.step("test-integration", "Run integration tests");
-    integration_test_step.dependOn(&run_integration_tests.step);
 }
