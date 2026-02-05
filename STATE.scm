@@ -6,7 +6,7 @@
     (version "0.3.0")
     (schema-version "1.0")
     (created "2026-01-11")
-    (updated "2026-02-05T18:00:00Z")
+    (updated "2026-02-05T19:00:00Z")
     (project "glyphbase")
     (repo "https://github.com/hyperpolymath/glyphbase")
     (formerly "formbase"))
@@ -24,7 +24,7 @@
 
   (current-position
     (phase "backend-integration")
-    (overall-completion 82)
+    (overall-completion 85)
     (components
       (specification 100 "README, SPEC, ROADMAP, and SCM files complete")
       (ui-grid 95 "Grid with editing, sorting, filtering, multi-select, column hiding")
@@ -32,7 +32,7 @@
       (backend-api 80 "Full REST router with CRUD handlers")
       (realtime 0 "Not started - v0.5.0 milestone")
       (automations 0 "Not started - v0.6.0 milestone")
-      (lithoglyph-integration 50 "Idris2 ABI + Zig FFI complete, needs Lithoglyph integration")
+      (lithoglyph-integration 75 "Idris2 ABI + Zig FFI + Lithoglyph core-zig integrated")
       (deployment-infrastructure 100 "GitHub Pages, Docker, releases - COMPLETE")
       (formal-verification 20 "Idris2 ABI with proofs complete"))
     (working-features
@@ -128,24 +128,27 @@
 
   (blockers-and-issues
     (critical ())
-    (high-priority
-      ("Lithoglyph C API integration needed for Zig FFI"))
+    (high-priority ())
     (medium-priority
-      ("CBOR operation encoding needs implementation"))
-    (low-priority ()))
+      ("Schema retrieval implementation needed (currently placeholder)")
+      ("Journal retrieval implementation needed (currently placeholder)")
+      ("CBOR result parsing for block IDs needed"))
+    (low-priority
+      ("Build and test NIF library with Lithoglyph")))
 
   (critical-next-actions
     (immediate
-      ("Integrate Lithoglyph C API with Zig FFI")
-      ("Implement CBOR operation encoding/decoding")
-      ("Test NIF loading in Erlang VM"))
+      ("Build Zig FFI with Lithoglyph dependency")
+      ("Test NIF loading in Erlang VM")
+      ("Verify database open/close operations"))
     (this-week
-      ("Connect Gleam client to real NIF (not mock)")
-      ("Add provenance tracking for cell edits")
-      ("Wire up backend database operations"))
+      ("Implement schema retrieval from Lithoglyph")
+      ("Implement journal retrieval from Lithoglyph")
+      ("Add CBOR result parsing for block IDs")
+      ("Connect Gleam client to real NIF (not mock)"))
     (this-month
+      ("Add provenance tracking for cell edits")
       ("Real-time collaboration with Yjs")
-      ("Provenance panel for cells")
       ("rescript-dom-mounter integration")
       ("Proven library integration")))
 
@@ -287,4 +290,26 @@
         ("Updated roadmap to show v0.1.0 and v0.2.0 complete")
         ("Created priv/ directory for compiled NIF libraries")
         ("Following hyperpolymath ABI/FFI Universal Standard (Idris2 ABI + Zig FFI)")
-        ("Overall completion: 82% (up from 80%)")))))
+        ("Overall completion: 82% (up from 80%)")))
+    (snapshot "2026-02-05T19:00:00Z"
+      (accomplishments
+        ("Continued Phase 3: Backend Integration - Task #12 (Lithoglyph integration)")
+        ("Explored Lithoglyph monorepo structure")
+        ("Located core-zig implementation at lithoglyph/formdb/database/core-zig")
+        ("Read bridge.zig - complete C ABI with 7 functions")
+        ("Read types.zig - FdbBlob, FdbStatus, FdbResult, FdbTxnMode")
+        ("Updated build.zig to import Lithoglyph core as module dependency")
+        ("Added LITHOGLYPH_PATH environment variable support")
+        ("Replaced placeholder Database/Transaction structs with Lithoglyph types")
+        ("Updated formdb_nif_db_open to call lithoglyph.fdb_db_open")
+        ("Updated formdb_nif_db_close to call lithoglyph.fdb_db_close")
+        ("Updated formdb_nif_txn_begin to call lithoglyph.fdb_txn_begin")
+        ("Updated formdb_nif_txn_commit to call lithoglyph.fdb_txn_commit")
+        ("Updated formdb_nif_txn_abort to call lithoglyph.fdb_txn_abort")
+        ("Updated formdb_nif_apply to call lithoglyph.fdb_apply")
+        ("Added proper error handling with FdbBlob error messages")
+        ("Added provenance extraction from FdbResult")
+        ("Created ffi/zig/README.md with build instructions (250 lines)")
+        ("Documented API, integration, CBOR encoding, error handling")
+        ("Overall completion: 85% (up from 82%)")
+        ("Lithoglyph integration: 75% (up from 50%)")))))
