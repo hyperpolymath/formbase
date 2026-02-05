@@ -212,3 +212,76 @@ let applySearch = (rows: array<row>, searchTerm: string): array<row> => {
     })
   }
 }
+
+// Undo/Redo configuration
+type historyAction = {
+  rowId: string,
+  fieldId: string,
+  oldValue: cellValue,
+  newValue: cellValue,
+}
+
+type historyState = {
+  past: array<historyAction>,
+  future: array<historyAction>,
+}
+
+let historyAtom: Jotai.atom<historyState> = Jotai.atom({past: [], future: []})
+
+// Record a cell edit to history
+let recordEdit = (
+  history: historyState,
+  rowId: string,
+  fieldId: string,
+  oldValue: cellValue,
+  newValue: cellValue,
+): historyState => {
+  {
+    past: Array.concat(history.past, [{rowId, fieldId, oldValue, newValue}]),
+    future: [], // Clear future when new edit is made
+  }
+}
+
+// Get undo action (most recent edit)
+let getUndoAction = (history: historyState): option<historyAction> => {
+  history.past->Array.at(-1)
+}
+
+// Get redo action (most recent undone edit)
+let getRedoAction = (history: historyState): option<historyAction> => {
+  history.future->Array.at(-1)
+}
+
+// Perform undo
+let performUndo = (history: historyState): (historyState, option<historyAction>) => {
+  switch getUndoAction(history) {
+  | Some(action) => {
+      let newPast = history.past->Array.slice(~start=0, ~end=-1)
+      let newFuture = Array.concat(history.future, [action])
+      ({past: newPast, future: newFuture}, Some(action))
+    }
+  | None => (history, None)
+  }
+}
+
+// Perform redo
+let performRedo = (history: historyState): (historyState, option<historyAction>) => {
+  switch getRedoAction(history) {
+  | Some(action) => {
+      let newFuture = history.future->Array.slice(~start=0, ~end=-1)
+      let newPast = Array.concat(history.past, [action])
+      ({past: newPast, future: newFuture}, Some(action))
+    }
+  | None => (history, None)
+  }
+}
+
+// Check if undo is available
+let canUndo = (history: historyState): bool => {
+  Array.length(history.past) > 0
+}
+
+// Check if redo is available
+let canRedo = (history: historyState): bool => {
+  Array.length(history.future) > 0
+}

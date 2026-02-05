@@ -319,6 +319,7 @@ let make = () => {
   let (sortConfig, setSortConfig) = Jotai.useAtom(GridStore.sortConfigAtom)
   let (hiddenColumns, setHiddenColumns) = Jotai.useAtom(GridStore.hiddenColumnsAtom)
   let (searchTerm, setSearchTerm) = Jotai.useAtom(GridStore.searchTermAtom)
+  let (history, setHistory) = Jotai.useAtom(GridStore.historyAtom)
   let (showFilterPanel, setShowFilterPanel) = React.useState(() => false)
   let (showHideFieldsPanel, setShowHideFieldsPanel) = React.useState(() => false)
 
@@ -395,6 +396,16 @@ let make = () => {
 
   // Handle cell updates
   let handleCellUpdate = (rowId: string, fieldId: string, newValue: cellValue) => {
+    // Get old value for undo/redo
+    let oldValue = rows
+      ->Array.find(r => r.id == rowId)
+      ->Option.flatMap(r => r.cells->Dict.get(fieldId))
+      ->Option.map(c => c.value)
+      ->Option.getOr(NullValue)
+
+    // Record to history
+    setHistory(prev => GridStore.recordEdit(prev, rowId, fieldId, oldValue, newValue))
+
     // Optimistic update - update local state first
     setRows(prevRows => {
       prevRows->Array.map(row => {
@@ -444,6 +455,90 @@ let make = () => {
       | Error(err) => Console.error2("Failed to update cell:", err.message)
       }
     })
+  }
+
+  // Handle undo
+  let handleUndo = () => {
+    if GridStore.canUndo(history) {
+      let (newHistory, action) = GridStore.performUndo(history)
+      setHistory(_ => newHistory)
+
+      switch action {
+      | Some({rowId, fieldId, oldValue, newValue: _}) => {
+          // Apply the old value
+          setRows(prevRows => {
+            prevRows->Array.map(row => {
+              if row.id == rowId {
+                let newCells = row.cells->Dict.toArray->Array.map(((key, cell)) => {
+                  if key == fieldId {
+                    (key, {...cell, value: oldValue})
+                  } else {
+                    (key, cell)
+                  }
+                })->Dict.fromArray
+
+                {...row, cells: newCells, updatedAt: Date.toISOString(Date.make())}
+              } else {
+                row
+              }
+            })
+          })
+
+          // Sync with backend
+          let _ = Client.updateCell(
+            "base_demo",
+            demoTable.id,
+            rowId,
+            fieldId,
+            cellValueToJson(oldValue),
+            (),
+          )
+        }
+      | None => ()
+      }
+    }
+  }
+
+  // Handle redo
+  let handleRedo = () => {
+    if GridStore.canRedo(history) {
+      let (newHistory, action) = GridStore.performRedo(history)
+      setHistory(_ => newHistory)
+
+      switch action {
+      | Some({rowId, fieldId, oldValue: _, newValue}) => {
+          // Apply the new value
+          setRows(prevRows => {
+            prevRows->Array.map(row => {
+              if row.id == rowId {
+                let newCells = row.cells->Dict.toArray->Array.map(((key, cell)) => {
+                  if key == fieldId {
+                    (key, {...cell, value: newValue})
+                  } else {
+                    (key, cell)
+                  }
+                })->Dict.fromArray
+
+                {...row, cells: newCells, updatedAt: Date.toISOString(Date.make())}
+              } else {
+                row
+              }
+            })
+          })
+
+          // Sync with backend
+          let _ = Client.updateCell(
+            "base_demo",
+            demoTable.id,
+            rowId,
+            fieldId,
+            cellValueToJson(newValue),
+            (),
+          )
+        }
+      | None => ()
+      }
+    }
   }
 
   // Handle adding a new row
@@ -496,6 +591,39 @@ let make = () => {
       }
     })
   }
+
+  // Keyboard shortcuts for undo/redo
+  React.useEffect0(() => {
+    let handleKeyDown = (evt: Dom.keyboardEvent) => {
+      let ctrlOrCmd = evt->Dom.KeyboardEvent.ctrlKey || evt->Dom.KeyboardEvent.metaKey
+      let shift = evt->Dom.KeyboardEvent.shiftKey
+      let key = evt->Dom.KeyboardEvent.key
+
+      // Ctrl+Z or Cmd+Z for undo
+      if ctrlOrCmd && !shift && key == "z" {
+        evt->Dom.Event.preventDefault
+        handleUndo()
+      }
+
+      // Ctrl+Y or Ctrl+Shift+Z or Cmd+Shift+Z for redo
+      if (ctrlOrCmd && key == "y") || (ctrlOrCmd && shift && key == "z") {
+        evt->Dom.Event.preventDefault
+        handleRedo()
+      }
+    }
+
+    let handleKeyDownAny: Dom.event => unit = event => {
+      handleKeyDown(Obj.magic(event))
+    }
+
+    Dom.document->Dom.Document.addEventListener("keydown", handleKeyDownAny)
+
+    Some(
+      () => {
+        Dom.document->Dom.Document.removeEventListener("keydown", handleKeyDownAny)
+      },
+    )
+  })
 
   <Jotai.Provider>
     <div className="formbase-app">
