@@ -51,20 +51,36 @@ let sortConfigAtom: Jotai.atom<option<sortConfig>> = Jotai.atom(None)
 let compareCellValues = (a: cellValue, b: cellValue): int => {
   switch (a, b) {
   | (NumberValue(na), NumberValue(nb)) =>
-    if na < nb { -1 } else if na > nb { 1 } else { 0 }
-  | (TextValue(sa), TextValue(sb)) =>
-    String.localeCompare(sa, sb)->Float.toInt
-  | (SelectValue(sa), SelectValue(sb)) =>
-    String.localeCompare(sa, sb)->Float.toInt
+    if na < nb {
+      -1
+    } else if na > nb {
+      1
+    } else {
+      0
+    }
+  | (TextValue(sa), TextValue(sb)) => String.localeCompare(sa, sb)->Float.toInt
+  | (SelectValue(sa), SelectValue(sb)) => String.localeCompare(sa, sb)->Float.toInt
   | (DateValue(da), DateValue(db)) => {
       let ta = Date.getTime(da)
       let tb = Date.getTime(db)
-      if ta < tb { -1 } else if ta > tb { 1 } else { 0 }
+      if ta < tb {
+        -1
+      } else if ta > tb {
+        1
+      } else {
+        0
+      }
     }
   | (CheckboxValue(ba), CheckboxValue(bb)) =>
-    if ba == bb { 0 } else if ba { 1 } else { -1 }
+    if ba == bb {
+      0
+    } else if ba {
+      1
+    } else {
+      -1
+    }
   | (NullValue, NullValue) => 0
-  | (NullValue, _) => 1  // Nulls sort to end
+  | (NullValue, _) => 1 // Nulls sort to end
   | (_, NullValue) => -1
   | _ => 0
   }
@@ -131,7 +147,8 @@ let cellMatchesFilter = (value: cellValue, operator: filterOperator, filterValue
 
   switch operator {
   | Contains => strValue->String.toLowerCase->String.includes(filterValue->String.toLowerCase)
-  | DoesNotContain => !(strValue->String.toLowerCase->String.includes(filterValue->String.toLowerCase))
+  | DoesNotContain =>
+    !(strValue->String.toLowerCase->String.includes(filterValue->String.toLowerCase))
   | Is => strValue->String.toLowerCase == filterValue->String.toLowerCase
   | IsNot => strValue->String.toLowerCase != filterValue->String.toLowerCase
   | IsEmpty => strValue == ""
@@ -195,7 +212,7 @@ let applySearch = (rows: array<row>, searchTerm: string): array<row> => {
     rows->Array.filter(row => {
       // Check if any cell in the row matches the search term
       row.cells
-      ->Dict.values
+      ->Dict.valuesToArray
       ->Array.some(cell => {
         let strValue = switch cell.value {
         | TextValue(s) => s

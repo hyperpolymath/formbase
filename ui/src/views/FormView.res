@@ -20,7 +20,7 @@ type formState =
   | Idle
   | Submitting
   | Success
-  | Error(string)
+  | Failed(string)
 
 @react.component
 let make = (
@@ -43,7 +43,7 @@ let make = (
       | None => Some({fieldId: field.id, message: `${field.name} is required`})
       | Some(TextValue(text)) if text->String.trim == "" =>
         Some({fieldId: field.id, message: `${field.name} is required`})
-      | Some(EmailValue(email)) if email->String.trim == "" =>
+      | Some(TextValue(email)) if email->String.trim == "" =>
         Some({fieldId: field.id, message: `${field.name} is required`})
       | _ => None
       }
@@ -54,14 +54,14 @@ let make = (
 
   // Validate email format
   let validateEmail = (email: string): bool => {
-    let emailRegex = %re("/^[^\s@]+@[^\s@]+\.[^\s@]+$/")
+    let emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
     emailRegex->RegExp.test(email)
   }
 
   // Validate URL format
   let validateUrl = (url: string): bool => {
     try {
-      let _ = URL.make(url)
+      let _ = %raw(`new URL(url)`)
       true
     } catch {
     | _ => false
@@ -70,8 +70,7 @@ let make = (
 
   // Validate all fields
   let validateForm = (): array<validationError> => {
-    fields
-    ->Array.filterMap(field => {
+    fields->Array.filterMap(field => {
       let value = formData->Dict.get(field.id)
 
       // Required field validation
@@ -81,7 +80,7 @@ let make = (
       } else {
         // Type-specific validation
         switch (field.fieldType, value) {
-        | (Email, Some(EmailValue(email))) if !validateEmail(email) =>
+        | (Email, Some(TextValue(email))) if !validateEmail(email) =>
           Some({fieldId: field.id, message: "Invalid email format"})
         | (Url, Some(UrlValue(url))) if !validateUrl(url) =>
           Some({fieldId: field.id, message: "Invalid URL format"})
@@ -100,7 +99,9 @@ let make = (
     })
 
     // Clear validation error for this field
-    setValidationErrors(prev => prev->Array.filter(err => err.fieldId != fieldId))
+    setValidationErrors(prev =>
+      prev->Array.filter((err: validationError) => err.fieldId != fieldId)
+    )
   }
 
   // Handle form submission
@@ -124,16 +125,18 @@ let make = (
             | Some(url) =>
               // Wait 2 seconds before redirect
               let _ = setTimeout(() => {
-                Window.location->Location.setHref(url)
+                %raw(`window.location.href = url`)
               }, 2000)
             | None => ()
             }
           }
-        | Error(message) => setFormState(_ => Error(message))
+        | Error(message) => setFormState(_ => Failed(message))
         }
       } catch {
       | error =>
-        setFormState(_ => Error(`Submission failed: ${error->JSON.stringifyAny->Option.getOr("Unknown error")}`))
+        setFormState(_ => Failed(
+          `Submission failed: ${error->JSON.stringifyAny->Option.getOr("Unknown error")}`,
+        ))
       }
     }
   }
@@ -170,7 +173,7 @@ let make = (
           | _ => ""
           }}
           onChange={evt => {
-            let value = evt->ReactEvent.Form.target["value"]
+            let value = %raw(`evt.target.value`)
             handleFieldChange(field.id, TextValue(value))
           }}
           required={field.required}
@@ -186,7 +189,7 @@ let make = (
           | _ => ""
           }}
           onChange={evt => {
-            let value = evt->ReactEvent.Form.target["value"]
+            let value = %raw(`evt.target.value`)
             switch Float.fromString(value) {
             | Some(num) => handleFieldChange(field.id, NumberValue(num))
             | None => ()
@@ -201,12 +204,12 @@ let make = (
           className="form-input"
           placeholder={field.description->Option.getOr("email@example.com")}
           value={switch currentValue {
-          | Some(EmailValue(email)) => email
+          | Some(TextValue(email)) => email
           | _ => ""
           }}
           onChange={evt => {
-            let value = evt->ReactEvent.Form.target["value"]
-            handleFieldChange(field.id, EmailValue(value))
+            let value = %raw(`evt.target.value`)
+            handleFieldChange(field.id, TextValue(value))
           }}
           required={field.required}
         />
@@ -221,7 +224,7 @@ let make = (
           | _ => ""
           }}
           onChange={evt => {
-            let value = evt->ReactEvent.Form.target["value"]
+            let value = %raw(`evt.target.value`)
             handleFieldChange(field.id, UrlValue(value))
           }}
           required={field.required}
@@ -241,7 +244,7 @@ let make = (
           | _ => ""
           }}
           onChange={evt => {
-            let value = evt->ReactEvent.Form.target["value"]
+            let value = %raw(`evt.target.value`)
             if value != "" {
               let date = Date.fromString(value)
               handleFieldChange(field.id, DateValue(date))
@@ -260,13 +263,13 @@ let make = (
             | _ => false
             }}
             onChange={evt => {
-              let checked = evt->ReactEvent.Form.target["checked"]
+              let checked = %raw(`evt.target.checked`)
               handleFieldChange(field.id, CheckboxValue(checked))
             }}
           />
           <span> {React.string(field.description->Option.getOr("Check this box"))} </span>
         </label>
-      | Select =>
+      | Select(options) =>
         <select
           id={field.id}
           className="form-select"
@@ -275,20 +278,24 @@ let make = (
           | _ => ""
           }}
           onChange={evt => {
-            let value = evt->ReactEvent.Form.target["value"]
+            let value = %raw(`evt.target.value`)
             if value != "" {
               handleFieldChange(field.id, SelectValue(value))
             }
           }}
-          required={field.required}>
+          required={field.required}
+        >
           <option value=""> {React.string("-- Select --")} </option>
-          {field.options
+          {options
           ->Array.map(opt => {
             <option key={opt} value={opt}> {React.string(opt)} </option>
           })
           ->React.array}
         </select>
-      | _ => <div className="form-unsupported"> {React.string("Field type not supported in forms")} </div>
+      | _ =>
+        <div className="form-unsupported">
+          {React.string("Field type not supported in forms")}
+        </div>
       }}
       {switch error {
       | Some(msg) => <div className="form-error-message"> {React.string(msg)} </div>
@@ -315,9 +322,7 @@ let make = (
     <div className="form-error-banner">
       <div className="form-error-banner-icon"> {React.string("⚠")} </div>
       <div className="form-error-banner-message"> {React.string(message)} </div>
-      <button
-        className="form-error-banner-close"
-        onClick={_ => setFormState(_ => Idle)}>
+      <button className="form-error-banner-close" onClick={_ => setFormState(_ => Idle)}>
         {React.string("×")}
       </button>
     </div>
@@ -337,21 +342,23 @@ let make = (
             }}
           </div>
           {switch formState {
-          | Error(message) => renderError(message)
+          | Failed(message) => renderError(message)
           | _ => React.null
           }}
-          <form className="form-body" onSubmit={handleSubmit}>
+          <form className="form-body" onSubmit={evt => handleSubmit(evt)->ignore}>
             {fields
-            ->Array.filter(field => field.fieldType != Computed)
+            ->Array.filter(field =>
+              switch field.fieldType {
+              | Formula(_) | Rollup(_, _) | Lookup(_, _) => false
+              | _ => true
+              }
+            )
             ->Array.map(renderFieldInput)
             ->React.array}
             <button
-              type_="submit"
-              className="form-submit-button"
-              disabled={formState == Submitting}>
-              {React.string(
-                formState == Submitting ? "Submitting..." : config.submitButtonText,
-              )}
+              type_="submit" className="form-submit-button" disabled={formState == Submitting}
+            >
+              {React.string(formState == Submitting ? "Submitting..." : config.submitButtonText)}
             </button>
           </form>
         </>

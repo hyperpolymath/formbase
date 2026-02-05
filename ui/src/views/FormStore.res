@@ -3,6 +3,9 @@
 
 open Types
 
+// File type from Web API
+type file
+
 type formConfig = {
   title: string,
   description: option<string>,
@@ -24,9 +27,9 @@ type fieldWithRules = {
 }
 
 // Atoms for form state
-let formDataAtom: Jotai.Atom.t<Dict.t<cellValue>> = Jotai.atom(Dict.make())
+let formDataAtom: Jotai.atom<Dict.t<cellValue>> = Jotai.atom(Dict.make())
 
-let formConfigAtom: Jotai.Atom.t<formConfig> = Jotai.atom({
+let formConfigAtom: Jotai.atom<formConfig> = Jotai.atom({
   title: "Submit Form",
   description: None,
   submitButtonText: "Submit",
@@ -40,16 +43,14 @@ module Validation = {
   let validateRule = (rule: validationRule, value: option<cellValue>): option<string> => {
     switch (rule, value) {
     | (Required, None) => Some("This field is required")
-    | (Required, Some(TextValue(text))) if text->String.trim == "" =>
-      Some("This field is required")
+    | (Required, Some(TextValue(text))) if text->String.trim == "" => Some("This field is required")
     | (Required, Some(EmailValue(email))) if email->String.trim == "" =>
       Some("This field is required")
     | (MinLength(min), Some(TextValue(text))) if text->String.length < min =>
       Some(`Must be at least ${min->Int.toString} characters`)
     | (MaxLength(max), Some(TextValue(text))) if text->String.length > max =>
       Some(`Must be no more than ${max->Int.toString} characters`)
-    | (Pattern(regex), Some(TextValue(text))) if !regex->RegExp.test(text) =>
-      Some("Invalid format")
+    | (Pattern(regex), Some(TextValue(text))) if !RegExp.test(regex, text) => Some("Invalid format")
     | (Custom(validator), Some(val)) => validator(val)
     | _ => None
     }
@@ -57,18 +58,17 @@ module Validation = {
 
   // Validate a field against all its rules
   let validateField = (fieldWithRules: fieldWithRules, value: option<cellValue>): array<string> => {
-    fieldWithRules.rules
-    ->Array.filterMap(rule => validateRule(rule, value))
+    fieldWithRules.rules->Array.filterMap(rule => validateRule(rule, value))
   }
 
   // Email validation
-  let emailRegex = %re("/^[^\s@]+@[^\s@]+\.[^\s@]+$/")
+  let emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
   let isValidEmail = (email: string): bool => emailRegex->RegExp.test(email)
 
   // URL validation
   let isValidUrl = (url: string): bool => {
     try {
-      let _ = URL.make(url)
+      let _ = %raw(`new URL(url)`)
       true
     } catch {
     | _ => false
@@ -76,30 +76,27 @@ module Validation = {
   }
 
   // Phone validation (basic international format)
-  let phoneRegex = %re("/^[+]?[(]?[0-9]{1,4}[)]?[-\s\.]?[(]?[0-9]{1,4}[)]?[-\s\.]?[0-9]{1,9}$/")
+  let phoneRegex = /^[+]?[(]?[0-9]{1,4}[)]?[-\s\.]?[(]?[0-9]{1,4}[)]?[-\s\.]?[0-9]{1,9}$/
   let isValidPhone = (phone: string): bool => phoneRegex->RegExp.test(phone)
 }
 
 // API integration
 module API = {
   // Submit form data
-  let submitForm = async (
-    tableId: string,
-    formData: Dict.t<cellValue>,
-  ): result<string, string> => {
+  let submitForm = async (tableId: string, formData: Dict.t<cellValue>): result<string, string> => {
     try {
       // Convert form data to API format
       let cells = Dict.make()
       formData
-      ->Dict.entries
+      ->Dict.toArray
       ->Array.forEach(((fieldId, value)) => {
         let cellData = switch value {
         | TextValue(text) => {"value": text}
-        | NumberValue(num) => {"value": num}
+        | NumberValue(num) => {"value": Float.toString(num)}
         | DateValue(date) => {"value": date->Date.toISOString}
-        | CheckboxValue(checked) => {"value": checked}
+        | CheckboxValue(checked) => {"value": checked ? "true" : "false"}
         | SelectValue(option) => {"value": option}
-        | MultiSelectValue(options) => {"value": options}
+        | MultiSelectValue(options) => {"value": options->Array.join(", ")}
         | UrlValue(url) => {"value": url}
         | EmailValue(email) => {"value": email}
         | _ => {"value": ""}
@@ -107,19 +104,14 @@ module API = {
         cells->Dict.set(fieldId, cellData)
       })
 
+      let bodyJson = JSON.stringifyAny({"cells": cells})->Option.getOr("{}")
       let response = await Fetch.fetch(
         `/api/tables/${tableId}/rows`,
-        {
-          method: #POST,
-          headers: Fetch.Headers.fromObject({
-            "Content-Type": "application/json",
-          }),
-          body: Fetch.Body.string(
-            JSON.stringifyAny({
-              "cells": cells,
-            })->Option.getOr("{}"),
-          ),
-        },
+        %raw(`{
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: bodyJson
+        }`),
       )
 
       if response->Fetch.Response.ok {
@@ -146,18 +138,18 @@ module API = {
     tableId: string,
     rowId: string,
     fieldId: string,
-    file: Fetch.File.t,
+    file: file,
   ): result<string, string> => {
     try {
-      let formData = FormData.make()
-      formData->FormData.append("file", file)
+      let formData = %raw(`new FormData()`)
+      %raw(`formData.append("file", file)`)
 
       let response = await Fetch.fetch(
         `/api/tables/${tableId}/rows/${rowId}/attachments/${fieldId}`,
-        {
-          method: #POST,
-          body: Fetch.Body.formData(formData),
-        },
+        %raw(`{
+          method: "POST",
+          body: formData
+        }`),
       )
 
       if response->Fetch.Response.ok {
@@ -216,10 +208,11 @@ module Utils = {
   let getFormFields = (fields: array<fieldConfig>): array<fieldConfig> => {
     fields->Array.filter(field => {
       switch field.fieldType {
-      | Text | Number | Email | Url | Date | Checkbox | Select => true
-      | MultiSelect => true // Can be supported with checkboxes
+      | Text | Number | Email | Url | Date | Checkbox | Select(_) => true
+      | MultiSelect(_) => true // Can be supported with checkboxes
       | Attachment => true // Can be supported with file input
-      | Computed => false
+      | Formula(_) | Rollup(_, _) | Lookup(_, _) => false // Computed fields can't be in forms
+      | _ => false // All other field types not supported
       }
     })
   }

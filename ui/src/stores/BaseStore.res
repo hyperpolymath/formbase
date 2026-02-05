@@ -27,6 +27,7 @@ let createBase = (name: string, icon: option<string>): base => {
   {
     id,
     name,
+    description: None,
     icon,
     tables: [],
     views: [],

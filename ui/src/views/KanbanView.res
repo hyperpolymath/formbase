@@ -10,7 +10,13 @@ type kanbanColumn = {
 }
 
 @react.component
-let make = (~tableId: string, ~groupByFieldId: string, ~rows: array<row>, ~fields: array<fieldConfig>, ~onUpdateRow: (string, string, cellValue) => unit) => {
+let make = (
+  ~tableId: string,
+  ~groupByFieldId: string,
+  ~rows: array<row>,
+  ~fields: array<fieldConfig>,
+  ~onUpdateRow: (string, string, cellValue) => unit,
+) => {
   let (draggedRowId, setDraggedRowId) = React.useState(() => None)
   let (draggedFromColumn, setDraggedFromColumn) = React.useState(() => None)
 
@@ -52,11 +58,13 @@ let make = (~tableId: string, ~groupByFieldId: string, ~rows: array<row>, ~field
   })
 
   let allColumns = if noStatusRows->Array.length > 0 {
-    columns->Array.concat([{
-      value: "",
-      label: "No Status",
-      rows: noStatusRows,
-    }])
+    columns->Array.concat([
+      {
+        value: "",
+        label: "No Status",
+        rows: noStatusRows,
+      },
+    ])
   } else {
     columns
   }
@@ -126,7 +134,8 @@ let make = (~tableId: string, ~groupByFieldId: string, ~rows: array<row>, ~field
       className={`kanban-card ${isDragging ? "dragging" : ""}`}
       draggable={true}
       onDragStart={evt => handleDragStart(row.id, columnValue, evt)}
-      onDragEnd={handleDragEnd}>
+      onDragEnd={handleDragEnd}
+    >
       <div className="kanban-card-title"> {React.string(cardTitle)} </div>
       <div className="kanban-card-meta">
         {row.cells
@@ -163,7 +172,8 @@ let make = (~tableId: string, ~groupByFieldId: string, ~rows: array<row>, ~field
       key={column.value}
       className="kanban-column"
       onDragOver={handleDragOver}
-      onDrop={evt => handleDrop(column.value, evt)}>
+      onDrop={evt => handleDrop(column.value, evt)}
+    >
       <div className="kanban-column-header">
         <h3 className="kanban-column-title"> {React.string(column.label)} </h3>
         <span className="kanban-column-count">

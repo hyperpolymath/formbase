@@ -26,6 +26,7 @@ type fieldConfig = {
   fieldType: fieldType,
   required: bool,
   defaultValue: option<string>,
+  description: option<string>,
 }
 
 // Attachment file object
@@ -46,6 +47,9 @@ type cellValue =
   | CheckboxValue(bool)
   | LinkValue(array<string>) // row ids
   | AttachmentValue(array<attachmentFile>)
+  | UrlValue(string) // URL field type
+  | EmailValue(string) // Email field type
+  | PhoneValue(string) // Phone field type
   | NullValue
 
 type provenanceEntry = {
@@ -77,15 +81,6 @@ type table = {
   primaryFieldId: string,
 }
 
-type base = {
-  id: string,
-  name: string,
-  description: option<string>,
-  tables: array<table>,
-  createdAt: string,
-  updatedAt: string,
-}
-
 type viewType =
   | Grid
   | Kanban(string) // group by field id
@@ -101,4 +96,15 @@ type viewConfig = {
   visibleFields: array<string>,
   sortBy: option<(string, [#Asc | #Desc])>,
   filterBy: option<string>, // FQL filter expression
+}
+
+type base = {
+  id: string,
+  name: string,
+  description: option<string>,
+  icon: option<string>,
+  tables: array<table>,
+  views: array<viewConfig>,
+  createdAt: string,
+  updatedAt: string,
 }

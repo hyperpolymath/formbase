@@ -15,21 +15,19 @@ module DateUtils = {
   let getMonthStart = (date: Date.t): Date.t => {
     let year = date->Date.getFullYear
     let month = date->Date.getMonth
-    Date.make(~year, ~month, ~date=1.0, ())
+    %raw(`new Date(year, month, 1)`)
   }
 
   let getMonthEnd = (date: Date.t): Date.t => {
     let year = date->Date.getFullYear
     let month = date->Date.getMonth
-    Date.make(~year, ~month=month + 1, ~date=0.0, ())
+    %raw(`new Date(year, month + 1, 0)`)
   }
 
   let getWeekStart = (date: Date.t): Date.t => {
     let dayOfWeek = date->Date.getDay
     let diff = dayOfWeek
-    let newDate = Date.make()
-    newDate->Date.setTime(date->Date.getTime -. Float.fromInt(diff) *. 86400000.0)
-    newDate
+    Date.fromTime(date->Date.getTime -. Float.fromInt(diff) *. 86400000.0)
   }
 
   let getDaysInMonth = (date: Date.t): int => {
@@ -43,7 +41,20 @@ module DateUtils = {
   }
 
   let formatMonthYear = (date: Date.t): string => {
-    let months = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"]
+    let months = [
+      "January",
+      "February",
+      "March",
+      "April",
+      "May",
+      "June",
+      "July",
+      "August",
+      "September",
+      "October",
+      "November",
+      "December",
+    ]
     let month = months->Array.get(date->Date.getMonth)->Option.getOr("")
     let year = date->Date.getFullYear->Int.toString
     `${month} ${year}`
@@ -92,19 +103,17 @@ let make = (
   // Navigation
   let goToPreviousMonth = () => {
     setCurrentDate(prev => {
-      let newDate = Date.make()
-      newDate->Date.setTime(prev->Date.getTime)
-      newDate->Date.setMonth(prev->Date.getMonth - 1)
-      newDate
+      let year = prev->Date.getFullYear
+      let month = prev->Date.getMonth
+      %raw(`new Date(year, month - 1, 1)`)
     })
   }
 
   let goToNextMonth = () => {
     setCurrentDate(prev => {
-      let newDate = Date.make()
-      newDate->Date.setTime(prev->Date.getTime)
-      newDate->Date.setMonth(prev->Date.getMonth + 1)
-      newDate
+      let year = prev->Date.getFullYear
+      let month = prev->Date.getMonth
+      %raw(`new Date(year, month + 1, 1)`)
     })
   }
 
@@ -127,27 +136,24 @@ let make = (
     let startDayOfWeek = monthStart->Date.getDay
 
     // Calculate total cells needed (previous month padding + current month + next month padding)
-    let totalCells = Int.fromFloat(Float.ceil(Float.fromInt(startDayOfWeek + daysInMonth) /. 7.0) *. 7.0)
+    let totalCells = Int.fromFloat(%raw(`Math.ceil((startDayOfWeek + daysInMonth) / 7) * 7`))
 
-    let cells = Array.range(0, totalCells - 1)->Array.map(i => {
+    let cells = Array.fromInitializer(~length=totalCells, i => {
       let dayNumber = i - startDayOfWeek + 1
 
       if dayNumber < 1 || dayNumber > daysInMonth {
         // Empty cell for previous/next month
         <div key={Int.toString(i)} className="calendar-day calendar-day-other-month" />
       } else {
-        let cellDate = Date.make(
-          ~year=currentDate->Date.getFullYear,
-          ~month=currentDate->Date.getMonth,
-          ~date=Float.fromInt(dayNumber),
-          ()
-        )
+        let year = currentDate->Date.getFullYear
+        let month = currentDate->Date.getMonth
+        let cellDate = %raw(`new Date(year, month, dayNumber)`)
         let dayEvents = getEventsForDay(cellDate)
         let isToday = DateUtils.isSameDay(cellDate, Date.make())
 
         <div
-          key={Int.toString(i)}
-          className={`calendar-day ${isToday ? "calendar-day-today" : ""}`}>
+          key={Int.toString(i)} className={`calendar-day ${isToday ? "calendar-day-today" : ""}`}
+        >
           <div className="calendar-day-number"> {React.string(Int.toString(dayNumber))} </div>
           <div className="calendar-day-events">
             {dayEvents
@@ -161,7 +167,8 @@ let make = (
                   | Some(handler) => handler(event.row)
                   | None => ()
                   }
-                }}>
+                }}
+              >
                 <div className="calendar-event-title"> {React.string(event.title)} </div>
               </div>
             })
@@ -205,7 +212,6 @@ let make = (
   }
 
   <div className="calendar-view">
-    {/* Calendar Header */}
     <div className="calendar-header">
       <div className="calendar-nav">
         <button className="calendar-nav-button" onClick={_ => goToPreviousMonth()}>
@@ -218,29 +224,29 @@ let make = (
           {React.string("›")}
         </button>
       </div>
-      <div className="calendar-title">
-        {React.string(DateUtils.formatMonthYear(currentDate))}
-      </div>
+      <div className="calendar-title"> {React.string(DateUtils.formatMonthYear(currentDate))} </div>
       <div className="calendar-view-switcher">
         <button
           className={`calendar-view-button ${viewMode == Month ? "active" : ""}`}
-          onClick={_ => setViewMode(_ => Month)}>
+          onClick={_ => setViewMode(_ => Month)}
+        >
           {React.string("Month")}
         </button>
         <button
           className={`calendar-view-button ${viewMode == Week ? "active" : ""}`}
-          onClick={_ => setViewMode(_ => Week)}>
+          onClick={_ => setViewMode(_ => Week)}
+        >
           {React.string("Week")}
         </button>
         <button
           className={`calendar-view-button ${viewMode == Day ? "active" : ""}`}
-          onClick={_ => setViewMode(_ => Day)}>
+          onClick={_ => setViewMode(_ => Day)}
+        >
           {React.string("Day")}
         </button>
       </div>
     </div>
 
-    {/* Calendar Body */}
     <div className="calendar-body">
       {switch viewMode {
       | Month => renderMonthView()

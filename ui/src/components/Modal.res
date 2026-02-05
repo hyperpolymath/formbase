@@ -2,30 +2,26 @@
 // Modal component for dialogs
 
 @react.component
-let make = (
-  ~isOpen: bool,
-  ~onClose: unit => unit,
-  ~title: string,
-  ~children: React.element,
-) => {
+let make = (~isOpen: bool, ~onClose: unit => unit, ~title: string, ~children: React.element) => {
   // Close on Escape key
   React.useEffect1(() => {
     if isOpen {
-      let handleKeyDown = (evt: Dom.keyboardEvent) => {
-        if evt->Dom.KeyboardEvent.key == "Escape" {
+      let handleKeyDown = (evt: 'a) => {
+        let key: string = %raw(`evt.key`)
+        if key == "Escape" {
           onClose()
         }
       }
 
       let handleKeyDownAny: Dom.event => unit = event => {
-        handleKeyDown(Obj.magic(event))
+        handleKeyDown(event)
       }
 
-      Dom.document->Dom.Document.addEventListener("keydown", handleKeyDownAny)
+      %raw(`document.addEventListener("keydown", handleKeyDownAny)`)
 
       Some(
         () => {
-          Dom.document->Dom.Document.removeEventListener("keydown", handleKeyDownAny)
+          %raw(`document.removeEventListener("keydown", handleKeyDownAny)`)
         },
       )
     } else {
@@ -40,10 +36,7 @@ let make = (
       <div className="modal-dialog" onClick={evt => evt->ReactEvent.Mouse.stopPropagation}>
         <div className="modal-header">
           <h2 className="modal-title"> {React.string(title)} </h2>
-          <button
-            className="modal-close-button"
-            onClick={_ => onClose()}
-            aria-label="Close">
+          <button className="modal-close-button" onClick={_ => onClose()} ariaLabel="Close">
             {React.string("×")}
           </button>
         </div>

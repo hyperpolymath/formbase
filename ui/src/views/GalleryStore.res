@@ -6,11 +6,11 @@ open Types
 type galleryLayout = Grid | Masonry
 
 // Atoms for gallery state
-let layoutAtom: Jotai.Atom.t<galleryLayout> = Jotai.atom(Grid)
+let layoutAtom: Jotai.atom<galleryLayout> = Jotai.atom(Grid)
 
-let coverFieldIdAtom: Jotai.Atom.t<option<string>> = Jotai.atom(None)
+let coverFieldIdAtom: Jotai.atom<option<string>> = Jotai.atom(None)
 
-let selectedCardIdAtom: Jotai.Atom.t<option<string>> = Jotai.atom(None)
+let selectedCardIdAtom: Jotai.atom<option<string>> = Jotai.atom(None)
 
 // Helper functions for layout
 module Layout = {
@@ -32,23 +32,26 @@ module Layout = {
 // API integration helpers
 module API = {
   // Upload attachment to a row
+  // File type from Web API
+  type file
+
   let uploadAttachment = async (
     tableId: string,
     rowId: string,
     fieldId: string,
-    file: Fetch.File.t,
+    file: file,
   ): result<string, string> => {
     try {
       // Create FormData with the file
-      let formData = FormData.make()
-      formData->FormData.append("file", file)
+      let formData = %raw(`new FormData()`)
+      %raw(`formData.append("file", file)`)
 
       let response = await Fetch.fetch(
         `/api/tables/${tableId}/rows/${rowId}/attachments/${fieldId}`,
-        {
-          method: #POST,
-          body: Fetch.Body.formData(formData),
-        },
+        %raw(`{
+          method: "POST",
+          body: formData
+        }`),
       )
 
       if response->Fetch.Response.ok {
@@ -79,9 +82,7 @@ module API = {
     try {
       let response = await Fetch.fetch(
         `/api/tables/${tableId}/rows/${rowId}/attachments/${fieldId}/${attachmentId}`,
-        {
-          method: #DELETE,
-        },
+        %raw(`{ method: "DELETE" }`),
       )
 
       if response->Fetch.Response.ok {
@@ -118,13 +119,11 @@ module API = {
       | Some(json) => {
           let response = await Fetch.fetch(
             `/api/tables/${tableId}/rows/${rowId}`,
-            {
-              method: #POST,
-              headers: Fetch.Headers.fromObject({
-                "Content-Type": "application/json",
-              }),
-              body: Fetch.Body.string(json),
-            },
+            %raw(`{
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: json
+            }`),
           )
 
           if response->Fetch.Response.ok {
@@ -170,15 +169,14 @@ module Filter = {
 
       // Check title
       let titleMatches = switch row.cells->Dict.get(primaryFieldId) {
-      | Some({value: TextValue(text)}) =>
-        text->String.toLowerCase->String.includes(lowerSearchTerm)
+      | Some({value: TextValue(text)}) => text->String.toLowerCase->String.includes(lowerSearchTerm)
       | _ => false
       }
 
       // Check all text fields
       let fieldMatches =
         row.cells
-        ->Dict.values
+        ->Dict.valuesToArray
         ->Array.some(cell => {
           switch cell.value {
           | TextValue(text) => text->String.toLowerCase->String.includes(lowerSearchTerm)

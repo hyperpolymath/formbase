@@ -54,7 +54,12 @@ let make = (
     let cardFields =
       fields
       ->Array.filter(f =>
-        f.id != primaryFieldId && Some(f.id) != coverFieldId && f.fieldType != Computed
+        f.id != primaryFieldId &&
+        Some(f.id) != coverFieldId &&
+        switch f.fieldType {
+        | Formula(_) => false
+        | _ => true
+        }
       )
       ->Array.slice(~start=0, ~end=3)
       ->Array.filterMap(field => {
@@ -83,18 +88,14 @@ let make = (
     | MultiSelectValue(options) => options->Array.join(", ")
     | UrlValue(url) => url
     | EmailValue(email) => email
-    | AttachmentValue(attachments) =>
-      `${attachments->Array.length->Int.toString} file(s)`
-    | ComputedValue(result) => result
+    | AttachmentValue(attachments) => `${attachments->Array.length->Int.toString} file(s)`
+    | _ => "" // Handle remaining variants
     }
   }
 
   // Render gallery card
   let renderCard = (card: galleryCard) => {
-    <div
-      key={card.row.id}
-      className="gallery-card"
-      onClick={_ => handleCardClick(card)}>
+    <div key={card.row.id} className="gallery-card" onClick={_ => handleCardClick(card)}>
       {switch card.imageUrl {
       | Some(url) =>
         <div className="gallery-card-image">
@@ -130,7 +131,8 @@ let make = (
         <button
           className="gallery-modal-close"
           onClick={_ => setSelectedCard(_ => None)}
-          aria-label="Close">
+          ariaLabel="Close"
+        >
           {React.string("×")}
         </button>
         {switch card.imageUrl {
@@ -164,7 +166,10 @@ let make = (
 
   <div className="gallery-view">
     <div
-      className={`gallery-grid ${layout == Masonry ? "gallery-grid-masonry" : "gallery-grid-standard"}`}>
+      className={`gallery-grid ${layout == Masonry
+          ? "gallery-grid-masonry"
+          : "gallery-grid-standard"}`}
+    >
       {cards->Array.map(renderCard)->React.array}
     </div>
     {switch selectedCard {

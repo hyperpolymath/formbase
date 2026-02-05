@@ -25,11 +25,9 @@ let stringToCellValue = (s: string, fieldType: fieldType): cellValue => {
   } else {
     switch fieldType {
     | Text | Url | Email | Phone | Barcode => TextValue(s)
-    | Number | Rating => {
-        switch Float.fromString(s) {
-        | Some(n) => NumberValue(n)
-        | None => TextValue(s)
-        }
+    | Number | Rating => switch Float.fromString(s) {
+      | Some(n) => NumberValue(n)
+      | None => TextValue(s)
       }
     | Checkbox => CheckboxValue(s == "true" || s == "1" || s == "yes")
     | Select(_) => SelectValue(s)
@@ -84,10 +82,8 @@ module EditableInput = {
           ReactEvent.Keyboard.preventDefault(e)
           onCancel()
         }
-      | "Tab" => {
-          // Let Tab propagate for cell navigation
-          onSave()
-        }
+      | "Tab" => // Let Tab propagate for cell navigation
+        onSave()
       | _ => ()
       }
     }
@@ -98,67 +94,58 @@ module EditableInput = {
 
     // Render different input types based on field type
     switch fieldType {
-    | Checkbox => {
-        <input
-          ref={ReactDOM.Ref.domRef(inputRef)}
-          type_="checkbox"
-          checked={value == "true"}
-          onChange={e => {
-            let checked = ReactEvent.Form.target(e)["checked"]
-            onChange(checked ? "true" : "false")
-          }}
-          onKeyDown={handleKeyDown}
-          onBlur={handleBlur}
-          className="grid-cell-input grid-cell-checkbox"
-        />
-      }
-    | Number | Rating => {
-        <input
-          ref={ReactDOM.Ref.domRef(inputRef)}
-          type_="number"
-          value
-          onChange={e => onChange(ReactEvent.Form.target(e)["value"])}
-          onKeyDown={handleKeyDown}
-          onBlur={handleBlur}
-          className="grid-cell-input grid-cell-number"
-        />
-      }
-    | Date => {
-        <input
-          ref={ReactDOM.Ref.domRef(inputRef)}
-          type_="date"
-          value
-          onChange={e => onChange(ReactEvent.Form.target(e)["value"])}
-          onKeyDown={handleKeyDown}
-          onBlur={handleBlur}
-          className="grid-cell-input grid-cell-date"
-        />
-      }
-    | DateTime => {
-        <input
-          ref={ReactDOM.Ref.domRef(inputRef)}
-          type_="datetime-local"
-          value
-          onChange={e => onChange(ReactEvent.Form.target(e)["value"])}
-          onKeyDown={handleKeyDown}
-          onBlur={handleBlur}
-          className="grid-cell-input grid-cell-datetime"
-        />
-      }
-    | Select(options) => {
-        <select
-          ref={ReactDOM.Ref.domRef(inputRef)}
-          value
-          onChange={e => onChange(ReactEvent.Form.target(e)["value"])}
-          onKeyDown={handleKeyDown}
-          onBlur={handleBlur}
-          className="grid-cell-input grid-cell-select">
-          <option value=""> {React.string("Select...")} </option>
-          {options
-          ->Array.map(opt => <option key={opt} value={opt}> {React.string(opt)} </option>)
-          ->React.array}
-        </select>
-      }
+    | Checkbox => <input
+        ref={ReactDOM.Ref.domRef(inputRef)}
+        type_="checkbox"
+        checked={value == "true"}
+        onChange={e => {
+          let checked = %raw(`e.target.checked`)
+          onChange(checked ? "true" : "false")
+        }}
+        onKeyDown={handleKeyDown}
+        onBlur={handleBlur}
+        className="grid-cell-input grid-cell-checkbox"
+      />
+    | Number | Rating => <input
+        ref={ReactDOM.Ref.domRef(inputRef)}
+        type_="number"
+        value
+        onChange={e => onChange(%raw(`e.target.value`))}
+        onKeyDown={handleKeyDown}
+        onBlur={handleBlur}
+        className="grid-cell-input grid-cell-number"
+      />
+    | Date => <input
+        ref={ReactDOM.Ref.domRef(inputRef)}
+        type_="date"
+        value
+        onChange={e => onChange(%raw(`e.target.value`))}
+        onKeyDown={handleKeyDown}
+        onBlur={handleBlur}
+        className="grid-cell-input grid-cell-date"
+      />
+    | DateTime => <input
+        ref={ReactDOM.Ref.domRef(inputRef)}
+        type_="datetime-local"
+        value
+        onChange={e => onChange(%raw(`e.target.value`))}
+        onKeyDown={handleKeyDown}
+        onBlur={handleBlur}
+        className="grid-cell-input grid-cell-datetime"
+      />
+    | Select(options) => <select
+        ref={ReactDOM.Ref.domRef(inputRef)}
+        value
+        onChange={e => onChange(%raw(`e.target.value`))}
+        onKeyDown={handleKeyDown}
+        onBlur={handleBlur}
+        className="grid-cell-input grid-cell-select"
+      >
+        <option value=""> {React.string("Select...")} </option>
+        {options
+        ->Array.map(opt => <option key={opt} value={opt}> {React.string(opt)} </option>)
+        ->React.array}
+      </select>
     | MultiSelect(options) => {
         // Parse current value to array of selected options
         let selectedValues =
@@ -206,46 +193,38 @@ module EditableInput = {
           </div>
         </div>
       }
-    | Url => {
-        <input
-          ref={ReactDOM.Ref.domRef(inputRef)}
-          type_="url"
-          value
-          placeholder="https://"
-          onChange={e => onChange(ReactEvent.Form.target(e)["value"])}
-          onKeyDown={handleKeyDown}
-          onBlur={handleBlur}
-          className="grid-cell-input grid-cell-url"
-        />
-      }
-    | Email => {
-        <input
-          ref={ReactDOM.Ref.domRef(inputRef)}
-          type_="email"
-          value
-          placeholder="email@example.com"
-          onChange={e => onChange(ReactEvent.Form.target(e)["value"])}
-          onKeyDown={handleKeyDown}
-          onBlur={handleBlur}
-          className="grid-cell-input grid-cell-email"
-        />
-      }
-    | Formula(_) | Rollup(_, _) | Lookup(_, _) => {
-        // Read-only computed fields
-        <div className="grid-cell-readonly"> {React.string(value)} </div>
-      }
-    | _ => {
-        // Default text input
-        <input
-          ref={ReactDOM.Ref.domRef(inputRef)}
-          type_="text"
-          value
-          onChange={e => onChange(ReactEvent.Form.target(e)["value"])}
-          onKeyDown={handleKeyDown}
-          onBlur={handleBlur}
-          className="grid-cell-input grid-cell-text"
-        />
-      }
+    | Url => <input
+        ref={ReactDOM.Ref.domRef(inputRef)}
+        type_="url"
+        value
+        placeholder="https://"
+        onChange={e => onChange(%raw(`e.target.value`))}
+        onKeyDown={handleKeyDown}
+        onBlur={handleBlur}
+        className="grid-cell-input grid-cell-url"
+      />
+    | Email => <input
+        ref={ReactDOM.Ref.domRef(inputRef)}
+        type_="email"
+        value
+        placeholder="email@example.com"
+        onChange={e => onChange(%raw(`e.target.value`))}
+        onKeyDown={handleKeyDown}
+        onBlur={handleBlur}
+        className="grid-cell-input grid-cell-email"
+      />
+    | Formula(_) | Rollup(_, _) | Lookup(_, _) => // Read-only computed fields
+      <div className="grid-cell-readonly"> {React.string(value)} </div>
+    | _ => // Default text input
+      <input
+        ref={ReactDOM.Ref.domRef(inputRef)}
+        type_="text"
+        value
+        onChange={e => onChange(%raw(`e.target.value`))}
+        onKeyDown={handleKeyDown}
+        onBlur={handleBlur}
+        className="grid-cell-input grid-cell-text"
+      />
     }
   }
 }
@@ -311,13 +290,12 @@ module Cell = {
     }
 
     <div
-      className={"grid-cell" ++
-      (isEditing ? " editing" : "") ++
-      (isComputed ? " computed" : "")}
+      className={"grid-cell" ++ (isEditing ? " editing" : "") ++ (isComputed ? " computed" : "")}
       onClick={handleClick}
       onDoubleClick={handleDoubleClick}
       role="gridcell"
-      tabIndex=0>
+      tabIndex=0
+    >
       {if isEditing {
         <EditableInput
           value={editValue}
@@ -382,7 +360,11 @@ module HeaderCell = {
           let clientX = e->Obj.magic->Dict.get("clientX")->Option.getOr(0.0)->Float.toInt
           let delta = clientX - startXRef.current
           let calculatedWidth = startWidthRef.current + delta
-          let newWidth = if calculatedWidth < 50 { 50 } else { calculatedWidth }
+          let newWidth = if calculatedWidth < 50 {
+            50
+          } else {
+            calculatedWidth
+          }
           onResize(field.id, newWidth)
         }
 
@@ -394,10 +376,12 @@ module HeaderCell = {
         doc->Webapi.Dom.Document.addMouseMoveEventListener(handleMouseMove)
         doc->Webapi.Dom.Document.addMouseUpEventListener(handleMouseUp)
 
-        Some(() => {
-          doc->Webapi.Dom.Document.removeMouseMoveEventListener(handleMouseMove)
-          doc->Webapi.Dom.Document.removeMouseUpEventListener(handleMouseUp)
-        })
+        Some(
+          () => {
+            doc->Webapi.Dom.Document.removeMouseMoveEventListener(handleMouseMove)
+            doc->Webapi.Dom.Document.removeMouseUpEventListener(handleMouseUp)
+          },
+        )
       } else {
         None
       }
@@ -415,7 +399,8 @@ module HeaderCell = {
       className={"grid-header-cell" ++ (isSorted ? " sorted" : "")}
       style={{width: Int.toString(width) ++ "px"}}
       role="columnheader"
-      onClick={_ => onSort(field.id)}>
+      onClick={_ => onSort(field.id)}
+    >
       <span className="field-icon"> {React.string(icon)} </span>
       <span className="field-name"> {React.string(field.name)} </span>
       {if isSorted {
@@ -457,13 +442,15 @@ module Row = {
                 onDeleteRow(row.id)
                 setShowDeleteConfirm(_ => false)
               }}
-              title="Confirm delete">
+              title="Confirm delete"
+            >
               {React.string("Y")}
             </button>
             <button
               className="delete-confirm-no"
               onClick={_ => setShowDeleteConfirm(_ => false)}
-              title="Cancel">
+              title="Cancel"
+            >
               {React.string("N")}
             </button>
           </div>
@@ -473,7 +460,8 @@ module Row = {
             <button
               className="delete-row-button"
               onClick={_ => setShowDeleteConfirm(_ => true)}
-              title="Delete row">
+              title="Delete row"
+            >
               {React.string("x")}
             </button>
           </>
@@ -482,9 +470,9 @@ module Row = {
       {fields
       ->Array.mapWithIndex((field, _fieldIndex) => {
         let isEditing =
-          editingCell->Option.map(e => e.rowId == row.id && e.fieldId == field.id)->Option.getOr(
-            false,
-          )
+          editingCell
+          ->Option.map(e => e.rowId == row.id && e.fieldId == field.id)
+          ->Option.getOr(false)
         <Cell
           key={field.id}
           row
@@ -518,7 +506,8 @@ let make = (
   let (columnWidths, setColumnWidths) = Jotai.useAtom(GridStore.columnWidthsAtom)
 
   // Filter out hidden columns
-  let visibleFields = table.fields->Array.filter(field => !(hiddenColumns->Array.includes(field.id)))
+  let visibleFields =
+    table.fields->Array.filter(field => !(hiddenColumns->Array.includes(field.id)))
 
   let getColumnWidth = (fieldId: string) => {
     columnWidths->Dict.get(fieldId)->Option.getOr(150)
@@ -535,7 +524,7 @@ let make = (
 
   // Start editing a cell
   let handleStartEdit = (rowId: string, fieldId: string, initialValue: string) => {
-    setEditingCell(_ => Some({GridStore.rowId: rowId, fieldId: fieldId}))
+    setEditingCell(_ => Some({GridStore.rowId, fieldId}))
     setEditValue(_ => initialValue)
   }
 
@@ -590,7 +579,12 @@ let make = (
         let newColIdx = currentColIdx + colDelta
 
         // Bounds checking
-        if newRowIdx >= 0 && newRowIdx < Array.length(rows) && newColIdx >= 0 && newColIdx < Array.length(visibleFields) {
+        if (
+          newRowIdx >= 0 &&
+          newRowIdx < Array.length(rows) &&
+          newColIdx >= 0 &&
+          newColIdx < Array.length(visibleFields)
+        ) {
           let newRow = rows->Array.getUnsafe(newRowIdx)
           let newField = visibleFields->Array.getUnsafe(newColIdx)
           let cell = newRow.cells->Dict.get(newField.id)
@@ -598,15 +592,13 @@ let make = (
           handleStartEdit(newRow.id, newField.id, cellValueToString(value))
         }
       }
-    | None => {
-        // Start editing first cell if not editing
-        if Array.length(rows) > 0 && Array.length(visibleFields) > 0 {
-          let firstRow = rows->Array.getUnsafe(0)
-          let firstField = visibleFields->Array.getUnsafe(0)
-          let cell = firstRow.cells->Dict.get(firstField.id)
-          let value = cell->Option.map(c => c.value)->Option.getOr(NullValue)
-          handleStartEdit(firstRow.id, firstField.id, cellValueToString(value))
-        }
+    | None => // Start editing first cell if not editing
+      if Array.length(rows) > 0 && Array.length(visibleFields) > 0 {
+        let firstRow = rows->Array.getUnsafe(0)
+        let firstField = visibleFields->Array.getUnsafe(0)
+        let cell = firstRow.cells->Dict.get(firstField.id)
+        let value = cell->Option.map(c => c.value)->Option.getOr(NullValue)
+        handleStartEdit(firstRow.id, firstField.id, cellValueToString(value))
       }
     }
   }
@@ -618,6 +610,7 @@ let make = (
     | "Tab" => {
         ReactEvent.Keyboard.preventDefault(e)
         handleSaveEdit()
+
         // Move to next cell
         if ReactEvent.Keyboard.shiftKey(e) {
           moveToCell(0, -1) // Shift+Tab goes left
@@ -625,14 +618,12 @@ let make = (
           moveToCell(0, 1) // Tab goes right
         }
       }
-    | "Enter" => {
-        if editingCell->Option.isSome {
-          handleSaveEdit()
-          moveToCell(1, 0) // Move down after enter
-        } else {
-          // Start editing current selection
-          moveToCell(0, 0)
-        }
+    | "Enter" => if editingCell->Option.isSome {
+        handleSaveEdit()
+        moveToCell(1, 0) // Move down after enter
+      } else {
+        // Start editing current selection
+        moveToCell(0, 0)
       }
     | "ArrowUp" =>
       if editingCell->Option.isNone {

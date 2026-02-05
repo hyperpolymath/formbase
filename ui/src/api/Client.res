@@ -11,12 +11,10 @@ type apiError = {
 type apiResult<'a> = result<'a, apiError>
 
 // Generic fetch wrapper
-let fetchJson = async (
-  ~method: string,
-  ~path: string,
-  ~body: option<JSON.t>=?,
-  (),
-): result<JSON.t, apiError> => {
+let fetchJson = async (~method: string, ~path: string, ~body: option<JSON.t>=?, ()): result<
+  JSON.t,
+  apiError,
+> => {
   let headers = Dict.fromArray([
     ("Content-Type", "application/json"),
     ("Accept", "application/json"),
@@ -136,12 +134,7 @@ let deleteRow = async (baseId: string, tableId: string, rowId: string) => {
 }
 
 // Provenance
-let getCellProvenance = async (
-  baseId: string,
-  tableId: string,
-  rowId: string,
-  fieldId: string,
-) => {
+let getCellProvenance = async (baseId: string, tableId: string, rowId: string, fieldId: string) => {
   await fetchJson(
     ~method="GET",
     ~path="/bases/" ++
@@ -151,8 +144,7 @@ let getCellProvenance = async (
     "/rows/" ++
     rowId ++
     "/cells/" ++
-    fieldId ++
-    "/provenance",
+    fieldId ++ "/provenance",
     (),
   )
 }

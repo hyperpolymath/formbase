@@ -8,12 +8,54 @@ let demoTable: table = {
   name: "Projects",
   primaryFieldId: "fld_name",
   fields: [
-    {id: "fld_name", name: "Name", fieldType: Text, required: true, defaultValue: None},
-    {id: "fld_status", name: "Status", fieldType: Select(["Not Started", "In Progress", "Done"]), required: false, defaultValue: Some("Not Started")},
-    {id: "fld_tags", name: "Tags", fieldType: MultiSelect(["Frontend", "Backend", "Bug", "Feature", "Docs", "Urgent"]), required: false, defaultValue: None},
-    {id: "fld_priority", name: "Priority", fieldType: Number, required: false, defaultValue: None},
-    {id: "fld_due", name: "Due Date", fieldType: Date, required: false, defaultValue: None},
-    {id: "fld_done", name: "Complete", fieldType: Checkbox, required: false, defaultValue: None},
+    {
+      id: "fld_name",
+      name: "Name",
+      fieldType: Text,
+      required: true,
+      defaultValue: None,
+      description: None,
+    },
+    {
+      id: "fld_status",
+      name: "Status",
+      fieldType: Select(["Not Started", "In Progress", "Done"]),
+      required: false,
+      defaultValue: Some("Not Started"),
+      description: None,
+    },
+    {
+      id: "fld_tags",
+      name: "Tags",
+      fieldType: MultiSelect(["Frontend", "Backend", "Bug", "Feature", "Docs", "Urgent"]),
+      required: false,
+      defaultValue: None,
+      description: None,
+    },
+    {
+      id: "fld_priority",
+      name: "Priority",
+      fieldType: Number,
+      required: false,
+      defaultValue: None,
+      description: None,
+    },
+    {
+      id: "fld_due",
+      name: "Due Date",
+      fieldType: Date,
+      required: false,
+      defaultValue: None,
+      description: None,
+    },
+    {
+      id: "fld_done",
+      name: "Complete",
+      fieldType: Checkbox,
+      required: false,
+      defaultValue: None,
+      description: None,
+    },
   ],
 }
 
@@ -25,9 +67,15 @@ let demoRows: array<row> = [
     cells: Dict.fromArray([
       ("fld_name", {fieldId: "fld_name", value: TextValue("Build grid component"), provenance: []}),
       ("fld_status", {fieldId: "fld_status", value: SelectValue("In Progress"), provenance: []}),
-      ("fld_tags", {fieldId: "fld_tags", value: MultiSelectValue(["Frontend", "Feature"]), provenance: []}),
+      (
+        "fld_tags",
+        {fieldId: "fld_tags", value: MultiSelectValue(["Frontend", "Feature"]), provenance: []},
+      ),
       ("fld_priority", {fieldId: "fld_priority", value: NumberValue(1.0), provenance: []}),
-      ("fld_due", {fieldId: "fld_due", value: DateValue(Date.fromString("2026-01-15")), provenance: []}),
+      (
+        "fld_due",
+        {fieldId: "fld_due", value: DateValue(Date.fromString("2026-01-15")), provenance: []},
+      ),
       ("fld_done", {fieldId: "fld_done", value: CheckboxValue(false), provenance: []}),
     ]),
   },
@@ -36,11 +84,24 @@ let demoRows: array<row> = [
     createdAt: "2026-01-12T00:00:00Z",
     updatedAt: "2026-01-12T00:00:00Z",
     cells: Dict.fromArray([
-      ("fld_name", {fieldId: "fld_name", value: TextValue("Implement FormDB bindings"), provenance: []}),
+      (
+        "fld_name",
+        {fieldId: "fld_name", value: TextValue("Implement FormDB bindings"), provenance: []},
+      ),
       ("fld_status", {fieldId: "fld_status", value: SelectValue("Not Started"), provenance: []}),
-      ("fld_tags", {fieldId: "fld_tags", value: MultiSelectValue(["Backend", "Feature", "Urgent"]), provenance: []}),
+      (
+        "fld_tags",
+        {
+          fieldId: "fld_tags",
+          value: MultiSelectValue(["Backend", "Feature", "Urgent"]),
+          provenance: [],
+        },
+      ),
       ("fld_priority", {fieldId: "fld_priority", value: NumberValue(2.0), provenance: []}),
-      ("fld_due", {fieldId: "fld_due", value: DateValue(Date.fromString("2026-01-20")), provenance: []}),
+      (
+        "fld_due",
+        {fieldId: "fld_due", value: DateValue(Date.fromString("2026-01-20")), provenance: []},
+      ),
       ("fld_done", {fieldId: "fld_done", value: CheckboxValue(false), provenance: []}),
     ]),
   },
@@ -49,13 +110,38 @@ let demoRows: array<row> = [
     createdAt: "2026-01-12T00:00:00Z",
     updatedAt: "2026-01-12T00:00:00Z",
     cells: Dict.fromArray([
-      ("fld_name", {fieldId: "fld_name", value: TextValue("Add real-time collaboration"), provenance: []}),
+      (
+        "fld_name",
+        {fieldId: "fld_name", value: TextValue("Add real-time collaboration"), provenance: []},
+      ),
       ("fld_status", {fieldId: "fld_status", value: SelectValue("Not Started"), provenance: []}),
-      ("fld_tags", {fieldId: "fld_tags", value: MultiSelectValue(["Frontend", "Backend", "Feature"]), provenance: []}),
+      (
+        "fld_tags",
+        {
+          fieldId: "fld_tags",
+          value: MultiSelectValue(["Frontend", "Backend", "Feature"]),
+          provenance: [],
+        },
+      ),
       ("fld_priority", {fieldId: "fld_priority", value: NumberValue(3.0), provenance: []}),
-      ("fld_due", {fieldId: "fld_due", value: DateValue(Date.fromString("2026-02-01")), provenance: []}),
+      (
+        "fld_due",
+        {fieldId: "fld_due", value: DateValue(Date.fromString("2026-02-01")), provenance: []},
+      ),
       ("fld_done", {fieldId: "fld_done", value: CheckboxValue(false), provenance: []}),
     ]),
+  },
+]
+
+// Demo presence data for collaboration features
+let demoPresence: array<CollaborationStore.collaborativeUser> = [
+  {clientId: "user_1", name: "Alice", color: "#3b82f6", cursor: None},
+  {clientId: "user_2", name: "Bob", color: "#10b981", cursor: None},
+  {
+    clientId: "user_3",
+    name: "Charlie",
+    color: "#f59e0b",
+    cursor: Some({rowId: "row_1", fieldId: "fld_status"}),
   },
 ]
 
@@ -74,10 +160,7 @@ module Sidebar = {
       <div className="sidebar-section">
         <div style={{display: "flex", justifyContent: "space-between", alignItems: "center"}}>
           <h3> {React.string("Bases")} </h3>
-          <button
-            className="sidebar-add-button"
-            onClick={_ => onCreateBase()}
-            title="New Base">
+          <button className="sidebar-add-button" onClick={_ => onCreateBase()} title="New Base">
             {React.string("+")}
           </button>
         </div>
@@ -94,7 +177,8 @@ module Sidebar = {
               <div
                 className={"sidebar-item" ++ (isActive ? " active" : "")}
                 onClick={_ => onSelectBase(base.id)}
-                style={{flex: "1"}}>
+                style={{flex: "1"}}
+              >
                 {switch base.icon {
                 | Some(icon) => <span> {React.string(icon ++ " ")} </span>
                 | None => React.null
@@ -104,7 +188,8 @@ module Sidebar = {
               <button
                 className="sidebar-delete-button"
                 onClick={_ => onDeleteBase(base.id)}
-                title="Delete base">
+                title="Delete base"
+              >
                 {React.string("×")}
               </button>
             </div>
@@ -115,10 +200,7 @@ module Sidebar = {
       <div className="sidebar-section">
         <div style={{display: "flex", justifyContent: "space-between", alignItems: "center"}}>
           <h3> {React.string("Tables")} </h3>
-          <button
-            className="sidebar-add-button"
-            onClick={_ => onCreateTable()}
-            title="New Table">
+          <button className="sidebar-add-button" onClick={_ => onCreateTable()} title="New Table">
             {React.string("+")}
           </button>
         </div>
@@ -130,13 +212,12 @@ module Sidebar = {
             base.tables
             ->Array.map(table => {
               <div key={table.id} style={{display: "flex", alignItems: "center", gap: "4px"}}>
-                <div className="sidebar-item" style={{flex: "1"}}>
-                  {React.string(table.name)}
-                </div>
+                <div className="sidebar-item" style={{flex: "1"}}> {React.string(table.name)} </div>
                 <button
                   className="sidebar-delete-button"
                   onClick={_ => onDeleteTable(table.id)}
-                  title="Delete table">
+                  title="Delete table"
+                >
                   {React.string("×")}
                 </button>
               </div>
@@ -247,7 +328,8 @@ module FilterPanel = {
               onChange={e => {
                 let newFieldId = ReactEvent.Form.target(e)["value"]
                 onUpdateFilter({...filter, fieldId: newFieldId})
-              }}>
+              }}
+            >
               {fields
               ->Array.map(field =>
                 <option key={field.id} value={field.id}> {React.string(field.name)} </option>
@@ -260,7 +342,8 @@ module FilterPanel = {
               onChange={e => {
                 let newOp = stringToOperator(ReactEvent.Form.target(e)["value"])
                 onUpdateFilter({...filter, operator: newOp})
-              }}>
+              }}
+            >
               {operatorOptions
               ->Array.map(((_, label)) =>
                 <option key={label} value={label}> {React.string(label)} </option>
@@ -285,7 +368,8 @@ module FilterPanel = {
               className="filter-remove-button"
               onClick={_ => onRemoveFilter(filter.id)}
               type_="button"
-              title="Remove filter">
+              title="Remove filter"
+            >
               {React.string("x")}
             </button>
           </div>
@@ -349,8 +433,10 @@ module Toolbar = {
   ) => {
     <div className="toolbar">
       <button
-        className={"toolbar-button" ++ (showHideFields ? " active" : "") ++ (hiddenCount > 0 ? " has-filter" : "")}
-        onClick={_ => onToggleHideFields()}>
+        className={"toolbar-button" ++
+        (showHideFields ? " active" : "") ++ (hiddenCount > 0 ? " has-filter" : "")}
+        onClick={_ => onToggleHideFields()}
+      >
         {React.string("Hide fields")}
         {if hiddenCount > 0 {
           <span className="filter-badge"> {React.string(Int.toString(hiddenCount))} </span>
@@ -359,8 +445,10 @@ module Toolbar = {
         }}
       </button>
       <button
-        className={"toolbar-button" ++ (showFilter ? " active" : "") ++ (filterCount > 0 ? " has-filter" : "")}
-        onClick={_ => onToggleFilter()}>
+        className={"toolbar-button" ++
+        (showFilter ? " active" : "") ++ (filterCount > 0 ? " has-filter" : "")}
+        onClick={_ => onToggleFilter()}
+      >
         {React.string("Filter")}
         {if filterCount > 0 {
           <span className="filter-badge"> {React.string(Int.toString(filterCount))} </span>
@@ -376,7 +464,7 @@ module Toolbar = {
         placeholder="Search..."
         value={searchTerm}
         onChange={evt => {
-          let value = evt->ReactEvent.Form.target["value"]
+          let value = %raw(`evt.target.value`)
           onSearchChange(value)
         }}
       />
@@ -465,12 +553,12 @@ let make = () => {
       | Some({fieldId: currentFieldId, direction}) if currentFieldId == fieldId =>
         // Same field - toggle direction or clear
         switch direction {
-        | #Asc => Some({GridStore.fieldId: fieldId, direction: #Desc})
+        | #Asc => Some({GridStore.fieldId, direction: #Desc})
         | #Desc => None // Clear sort on third click
         }
       | _ =>
         // Different field - sort ascending
-        Some({GridStore.fieldId: fieldId, direction: #Asc})
+        Some({GridStore.fieldId, direction: #Asc})
       }
     })
   }
@@ -564,7 +652,8 @@ let make = () => {
   // Handle cell updates
   let handleCellUpdate = (rowId: string, fieldId: string, newValue: cellValue) => {
     // Get old value for undo/redo
-    let oldValue = rows
+    let oldValue =
+      rows
       ->Array.find(r => r.id == rowId)
       ->Option.flatMap(r => r.cells->Dict.get(fieldId))
       ->Option.map(c => c.value)
@@ -577,24 +666,36 @@ let make = () => {
     setRows(prevRows => {
       prevRows->Array.map(row => {
         if row.id == rowId {
-          let newCells = row.cells->Dict.toArray->Array.map(((key, cell)) => {
-            if key == fieldId {
-              (key, {
-                ...cell,
-                value: newValue,
-              })
-            } else {
-              (key, cell)
-            }
-          })->Dict.fromArray
+          let newCells =
+            row.cells
+            ->Dict.toArray
+            ->Array.map(
+              ((key, cell)) => {
+                if key == fieldId {
+                  (
+                    key,
+                    {
+                      ...cell,
+                      value: newValue,
+                    },
+                  )
+                } else {
+                  (key, cell)
+                }
+              },
+            )
+            ->Dict.fromArray
 
           // Add the cell if it doesn't exist
           if !(newCells->Dict.keysToArray->Array.includes(fieldId)) {
-            newCells->Dict.set(fieldId, {
-              fieldId: fieldId,
-              value: newValue,
-              provenance: [],
-            })
+            newCells->Dict.set(
+              fieldId,
+              {
+                fieldId,
+                value: newValue,
+                provenance: [],
+              },
+            )
           }
 
           {
@@ -636,13 +737,19 @@ let make = () => {
           setRows(prevRows => {
             prevRows->Array.map(row => {
               if row.id == rowId {
-                let newCells = row.cells->Dict.toArray->Array.map(((key, cell)) => {
-                  if key == fieldId {
-                    (key, {...cell, value: oldValue})
-                  } else {
-                    (key, cell)
-                  }
-                })->Dict.fromArray
+                let newCells =
+                  row.cells
+                  ->Dict.toArray
+                  ->Array.map(
+                    ((key, cell)) => {
+                      if key == fieldId {
+                        (key, {...cell, value: oldValue})
+                      } else {
+                        (key, cell)
+                      }
+                    },
+                  )
+                  ->Dict.fromArray
 
                 {...row, cells: newCells, updatedAt: Date.toISOString(Date.make())}
               } else {
@@ -678,13 +785,19 @@ let make = () => {
           setRows(prevRows => {
             prevRows->Array.map(row => {
               if row.id == rowId {
-                let newCells = row.cells->Dict.toArray->Array.map(((key, cell)) => {
-                  if key == fieldId {
-                    (key, {...cell, value: newValue})
-                  } else {
-                    (key, cell)
-                  }
-                })->Dict.fromArray
+                let newCells =
+                  row.cells
+                  ->Dict.toArray
+                  ->Array.map(
+                    ((key, cell)) => {
+                      if key == fieldId {
+                        (key, {...cell, value: newValue})
+                      } else {
+                        (key, cell)
+                      }
+                    },
+                  )
+                  ->Dict.fromArray
 
                 {...row, cells: newCells, updatedAt: Date.toISOString(Date.make())}
               } else {
@@ -710,17 +823,21 @@ let make = () => {
 
   // Handle adding a new row
   let handleAddRow = () => {
-    let newRowId = "row_" ++ Int.toString(Array.length(rows) + 1) ++ "_" ++ Float.toString(Date.now())
+    let newRowId =
+      "row_" ++ Int.toString(Array.length(rows) + 1) ++ "_" ++ Float.toString(Date.now())
     let now = Date.toISOString(Date.make())
 
     // Create empty cells with default values
-    let emptyCells = demoTable.fields->Array.map(field => {
-      let defaultValue = switch field.defaultValue {
-      | Some(v) => TextValue(v)
-      | None => NullValue
-      }
-      (field.id, {fieldId: field.id, value: defaultValue, provenance: []})
-    })->Dict.fromArray
+    let emptyCells =
+      demoTable.fields
+      ->Array.map(field => {
+        let defaultValue = switch field.defaultValue {
+        | Some(v) => TextValue(v)
+        | None => NullValue
+        }
+        (field.id, {fieldId: field.id, value: defaultValue, provenance: []})
+      })
+      ->Dict.fromArray
 
     let newRow: row = {
       id: newRowId,
@@ -733,11 +850,20 @@ let make = () => {
     setRows(prevRows => Array.concat(prevRows, [newRow]))
 
     // Sync with backend via API
-    let cellsJson = emptyCells->Dict.toArray->Array.map(((fieldId, cell)) => {
-      (fieldId, cellValueToJson(cell.value))
-    })->Dict.fromArray
+    let cellsJson =
+      emptyCells
+      ->Dict.toArray
+      ->Array.map(((fieldId, cell)) => {
+        (fieldId, cellValueToJson(cell.value))
+      })
+      ->Dict.fromArray
 
-    let _ = Client.createRow("base_demo", demoTable.id, newRowId, cellsJson)->Promise.thenResolve(result => {
+    let _ = Client.createRow(
+      "base_demo",
+      demoTable.id,
+      newRowId,
+      cellsJson,
+    )->Promise.thenResolve(result => {
       switch result {
       | Ok(_) => Console.log2("Row created successfully:", newRowId)
       | Error(err) => Console.error2("Failed to create row:", err.message)
@@ -762,19 +888,19 @@ let make = () => {
   // Keyboard shortcuts for undo/redo
   React.useEffect0(() => {
     let handleKeyDown = (evt: Dom.keyboardEvent) => {
-      let ctrlOrCmd = evt->Dom.KeyboardEvent.ctrlKey || evt->Dom.KeyboardEvent.metaKey
-      let shift = evt->Dom.KeyboardEvent.shiftKey
-      let key = evt->Dom.KeyboardEvent.key
+      let ctrlOrCmd = %raw(`evt.ctrlKey || evt.metaKey`)
+      let shift = %raw(`evt.shiftKey`)
+      let key = %raw(`evt.key`)
 
       // Ctrl+Z or Cmd+Z for undo
       if ctrlOrCmd && !shift && key == "z" {
-        evt->Dom.Event.preventDefault
+        %raw(`evt.preventDefault()`)
         handleUndo()
       }
 
       // Ctrl+Y or Ctrl+Shift+Z or Cmd+Shift+Z for redo
       if (ctrlOrCmd && key == "y") || (ctrlOrCmd && shift && key == "z") {
-        evt->Dom.Event.preventDefault
+        %raw(`evt.preventDefault()`)
         handleRedo()
       }
     }
@@ -783,11 +909,11 @@ let make = () => {
       handleKeyDown(Obj.magic(event))
     }
 
-    Dom.document->Dom.Document.addEventListener("keydown", handleKeyDownAny)
+    %raw(`document.addEventListener("keydown", handleKeyDownAny)`)
 
     Some(
       () => {
-        Dom.document->Dom.Document.removeEventListener("keydown", handleKeyDownAny)
+        %raw(`document.removeEventListener("keydown", handleKeyDownAny)`)
       },
     )
   })
@@ -818,13 +944,11 @@ let make = () => {
             onToggleHideFields={handleToggleHideFieldsPanel}
             showHideFields={showHideFieldsPanel}
             searchTerm={searchTerm}
-            onSearchChange={setSearchTerm}
+            onSearchChange={value => setSearchTerm(_ => value)}
           />
           {if showHideFieldsPanel {
             <HideFieldsPanel
-              fields={demoTable.fields}
-              hiddenColumns
-              onToggleColumn={handleToggleColumn}
+              fields={demoTable.fields} hiddenColumns onToggleColumn={handleToggleColumn}
             />
           } else if showFilterPanel {
             <FilterPanel
@@ -837,14 +961,28 @@ let make = () => {
           } else {
             React.null
           }}
-          <Grid table={demoTable} rows={sortedRows} onCellUpdate={handleCellUpdate} onAddRow={handleAddRow} onDeleteRow={handleDeleteRow} sortConfig onSort={handleSort} hiddenColumns />
+          <div style={{position: "relative"}}>
+            <Grid
+              table={demoTable}
+              rows={sortedRows}
+              onCellUpdate={handleCellUpdate}
+              onAddRow={handleAddRow}
+              onDeleteRow={handleDeleteRow}
+              sortConfig
+              onSort={handleSort}
+              hiddenColumns
+            />
+            <LiveCursors users={demoPresence} />
+          </div>
+          <PresenceIndicators users={demoPresence} />
         </div>
       </main>
-      {/* Create Base Modal */}
+
       <Modal
         isOpen={showCreateBaseModal}
         onClose={() => setShowCreateBaseModal(_ => false)}
-        title="Create New Base">
+        title="Create New Base"
+      >
         <div className="modal-form">
           <div className="modal-form-group">
             <label className="modal-form-label"> {React.string("Base Name")} </label>
@@ -854,7 +992,7 @@ let make = () => {
               placeholder="My Base"
               value={newBaseName}
               onChange={evt => {
-                let value = evt->ReactEvent.Form.target["value"]
+                let value = %raw(`evt.target.value`)
                 setNewBaseName(_ => value)
               }}
               onKeyDown={evt => {
@@ -865,24 +1003,21 @@ let make = () => {
             />
           </div>
           <div className="modal-form-actions">
-            <button
-              className="modal-button"
-              onClick={_ => setShowCreateBaseModal(_ => false)}>
+            <button className="modal-button" onClick={_ => setShowCreateBaseModal(_ => false)}>
               {React.string("Cancel")}
             </button>
-            <button
-              className="modal-button modal-button-primary"
-              onClick={_ => handleCreateBase()}>
+            <button className="modal-button modal-button-primary" onClick={_ => handleCreateBase()}>
               {React.string("Create")}
             </button>
           </div>
         </div>
       </Modal>
-      {/* Create Table Modal */}
+
       <Modal
         isOpen={showCreateTableModal}
         onClose={() => setShowCreateTableModal(_ => false)}
-        title="Create New Table">
+        title="Create New Table"
+      >
         <div className="modal-form">
           <div className="modal-form-group">
             <label className="modal-form-label"> {React.string("Table Name")} </label>
@@ -892,7 +1027,7 @@ let make = () => {
               placeholder="My Table"
               value={newTableName}
               onChange={evt => {
-                let value = evt->ReactEvent.Form.target["value"]
+                let value = %raw(`evt.target.value`)
                 setNewTableName(_ => value)
               }}
               onKeyDown={evt => {
@@ -903,56 +1038,50 @@ let make = () => {
             />
           </div>
           <div className="modal-form-actions">
-            <button
-              className="modal-button"
-              onClick={_ => setShowCreateTableModal(_ => false)}>
+            <button className="modal-button" onClick={_ => setShowCreateTableModal(_ => false)}>
               {React.string("Cancel")}
             </button>
             <button
-              className="modal-button modal-button-primary"
-              onClick={_ => handleCreateTable()}>
+              className="modal-button modal-button-primary" onClick={_ => handleCreateTable()}
+            >
               {React.string("Create")}
             </button>
           </div>
         </div>
       </Modal>
-      {/* Delete Base Modal */}
+
       <Modal
         isOpen={showDeleteBaseModal}
         onClose={() => setShowDeleteBaseModal(_ => false)}
-        title="Delete Base">
+        title="Delete Base"
+      >
         <div className="modal-form">
           <p> {React.string("Are you sure you want to delete this base and all its tables?")} </p>
           <div className="modal-form-actions">
-            <button
-              className="modal-button"
-              onClick={_ => setShowDeleteBaseModal(_ => false)}>
+            <button className="modal-button" onClick={_ => setShowDeleteBaseModal(_ => false)}>
               {React.string("Cancel")}
             </button>
-            <button
-              className="modal-button modal-button-danger"
-              onClick={_ => confirmDeleteBase()}>
+            <button className="modal-button modal-button-danger" onClick={_ => confirmDeleteBase()}>
               {React.string("Delete")}
             </button>
           </div>
         </div>
       </Modal>
-      {/* Delete Table Modal */}
+
       <Modal
         isOpen={showDeleteTableModal}
         onClose={() => setShowDeleteTableModal(_ => false)}
-        title="Delete Table">
+        title="Delete Table"
+      >
         <div className="modal-form">
           <p> {React.string("Are you sure you want to delete this table?")} </p>
           <div className="modal-form-actions">
-            <button
-              className="modal-button"
-              onClick={_ => setShowDeleteTableModal(_ => false)}>
+            <button className="modal-button" onClick={_ => setShowDeleteTableModal(_ => false)}>
               {React.string("Cancel")}
             </button>
             <button
-              className="modal-button modal-button-danger"
-              onClick={_ => confirmDeleteTable()}>
+              className="modal-button modal-button-danger" onClick={_ => confirmDeleteTable()}
+            >
               {React.string("Delete")}
             </button>
           </div>
