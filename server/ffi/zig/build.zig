@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: PMPL-1.0-or-later
-// Build script for FormDB Zig FFI NIF library
+// Build script for FormDB Zig FFI NIF library (Zig 0.15.2+)
 
 const std = @import("std");
 
@@ -7,20 +7,11 @@ pub fn build(b: *std.Build) void {
     const target = b.standardTargetOptions(.{});
     const optimize = b.standardOptimizeOption(.{});
 
-    // Build shared library for Erlang NIF
-    const lib = b.addSharedLibrary(.{
-        .name = "formdb_nif",
-        .root_source_file = b.path("src/main.zig"),
-        .target = target,
-        .optimize = optimize,
-    });
-
     // Link Erlang NIF headers (platform-specific)
     const erts_include = std.process.getEnvVarOwned(
         b.allocator,
         "ERTS_INCLUDE_DIR"
     ) catch "/usr/lib/erlang/usr/include";
-    lib.addIncludePath(.{ .cwd_relative = erts_include });
 
     // Add Lithoglyph core-zig as a module dependency
     const lithoglyph_path = std.process.getEnvVarOwned(
@@ -28,12 +19,28 @@ pub fn build(b: *std.Build) void {
         "LITHOGLYPH_PATH"
     ) catch "../../../../lithoglyph/formdb/database/core-zig";
 
-    const lithoglyph_core = b.addModule("lithoglyph", .{
+    const lithoglyph_core = b.createModule(.{
         .root_source_file = .{ .cwd_relative =
             b.pathJoin(&.{lithoglyph_path, "src/bridge.zig"})
         },
     });
-    lib.root_module.addImport("lithoglyph", lithoglyph_core);
+
+    // Build shared library for Erlang NIF
+    const lib = b.addLibrary(.{
+        .name = "formdb_nif",
+        .linkage = .dynamic,
+        .root_module = b.createModule(.{
+            .root_source_file = b.path("src/main.zig"),
+            .target = target,
+            .optimize = optimize,
+            .link_libc = true,
+            .imports = &.{
+                .{ .name = "lithoglyph", .module = lithoglyph_core },
+            },
+        }),
+    });
+
+    lib.addIncludePath(.{ .cwd_relative = erts_include });
 
     // Install to priv directory for Erlang to find
     const install_artifact = b.addInstallArtifact(lib, .{
@@ -47,9 +54,14 @@ pub fn build(b: *std.Build) void {
 
     // Unit tests
     const main_tests = b.addTest(.{
-        .root_source_file = b.path("src/main.zig"),
-        .target = target,
-        .optimize = optimize,
+        .root_module = b.createModule(.{
+            .root_source_file = b.path("src/main.zig"),
+            .target = target,
+            .optimize = optimize,
+            .imports = &.{
+                .{ .name = "lithoglyph", .module = lithoglyph_core },
+            },
+        }),
     });
 
     const run_main_tests = b.addRunArtifact(main_tests);
@@ -58,11 +70,15 @@ pub fn build(b: *std.Build) void {
 
     // Integration tests
     const integration_tests = b.addTest(.{
-        .root_source_file = b.path("test/integration_test.zig"),
-        .target = target,
-        .optimize = optimize,
+        .root_module = b.createModule(.{
+            .root_source_file = b.path("test/integration_test.zig"),
+            .target = target,
+            .optimize = optimize,
+            .imports = &.{
+                .{ .name = "main", .module = lib.root_module },
+            },
+        }),
     });
-    integration_tests.linkLibrary(lib);
 
     const run_integration_tests = b.addRunArtifact(integration_tests);
     const integration_test_step = b.step("test-integration", "Run integration tests");
