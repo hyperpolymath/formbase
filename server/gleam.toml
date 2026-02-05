@@ -1,10 +1,10 @@
 # SPDX-License-Identifier: PMPL-1.0-or-later
 
-name = "formbase_server"
+name = "glyphbase_server"
 version = "0.1.0"
-description = "FormBase API server"
+description = "Glyphbase API server"
 licences = ["AGPL-3.0-or-later"]
-repository = { type = "github", user = "hyperpolymath", repo = "formbase" }
+repository = { type = "github", user = "hyperpolymath", repo = "glyphbase" }
 
 [dependencies]
 gleam_stdlib = ">= 0.45.0"

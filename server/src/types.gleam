@@ -1,9 +1,9 @@
 // SPDX-License-Identifier: AGPL-3.0-or-later
-// Core types for FormBase server
+// Core types for Glyphbase server
 
 import gleam/option.{type Option}
 
-/// Field types supported by FormBase
+/// Field types supported by Glyphbase
 pub type FieldType {
   Text
   Number

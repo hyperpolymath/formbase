@@ -1,6 +1,6 @@
 # proven Integration Plan
 
-This document outlines the recommended [proven](https://github.com/hyperpolymath/proven) modules for FormBase.
+This document outlines the recommended [proven](https://github.com/hyperpolymath/proven) modules for Glyphbase.
 
 ## Recommended Modules
 
@@ -13,7 +13,7 @@ This document outlines the recommended [proven](https://github.com/hyperpolymath
 
 ## Integration Notes
 
-FormBase as an open-source Airtable alternative that "remembers everything" requires:
+Glyphbase as an open-source Airtable alternative that "remembers everything" requires:
 
 - **SafeTransaction** ensures spreadsheet operations maintain ACID properties. Cell edits, row insertions, and bulk operations are either fully committed or fully rolled back, preventing partial state corruption.
 
@@ -21,9 +21,9 @@ FormBase as an open-source Airtable alternative that "remembers everything" requ
 
 - **SafeOrdering** tracks the ordering of changes with verified causality. When multiple users edit concurrently, vector clocks determine the correct merge order.
 
-- **SafeProvenance** is core to FormBase's value proposition - tracking who made what change when. The `ProvenanceChain` provides tamper-evident history, and `Lineage` tracks how each cell value was derived.
+- **SafeProvenance** is core to Glyphbase's value proposition - tracking who made what change when. The `ProvenanceChain` provides tamper-evident history, and `Lineage` tracks how each cell value was derived.
 
-These modules together enable FormBase's promise of complete change tracking with mathematical guarantees.
+These modules together enable Glyphbase's promise of complete change tracking with mathematical guarantees.
 
 ## Related
 

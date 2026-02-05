@@ -1,17 +1,17 @@
 // SPDX-License-Identifier: PMPL-1.0-or-later
-= FormBase Specification
+= Glyphbase Specification
 :toc:
 :toc-placement: preamble
 :toclevels: 4
 :sectnums:
 
-Technical specification for FormBase, the open-source Airtable alternative built on Lithoglyph.
+Technical specification for Glyphbase, the open-source Airtable alternative built on Lithoglyph.
 
 == Overview
 
 === Purpose
 
-FormBase provides a spreadsheet-like interface for non-technical users to work with structured data, while leveraging Lithoglyph's unique capabilities: provenance tracking, reversibility proofs, and PROMPT quality scores.
+Glyphbase provides a spreadsheet-like interface for non-technical users to work with structured data, while leveraging Lithoglyph's unique capabilities: provenance tracking, reversibility proofs, and PROMPT quality scores.
 
 === Design Principles
 
@@ -714,7 +714,7 @@ type ServerMessage =
 
 === Real-time Sync
 
-FormBase uses CRDTs (via Yjs) for conflict-free real-time collaboration:
+Glyphbase uses CRDTs (via Yjs) for conflict-free real-time collaboration:
 
 * Cell-level granularity
 * Offline edits merge automatically
@@ -852,23 +852,23 @@ interface RowLevelSecurity {
 # docker-compose.yml
 version: '3.8'
 services:
-  formbase:
-    image: ghcr.io/hyperpolymath/formbase:latest
+  glyphbase:
+    image: ghcr.io/hyperpolymath/glyphbase:latest
     ports:
       - "3000:3000"
     environment:
       - FORMDB_PATH=/data
       - AUTH_SECRET=your-secret-here
     volumes:
-      - formbase-data:/data
+      - glyphbase-data:/data
 
 volumes:
-  formbase-data:
+  glyphbase-data:
 ----
 
 === Cloud Storage
 
-FormBase supports storing data on:
+Glyphbase supports storing data on:
 
 * Local filesystem
 * Dropbox (append-only safe)

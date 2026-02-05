@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: AGPL-3.0-or-later
-// FormBase API Server
+// Glyphbase API Server
 
 import envoy
 import formdb/client
@@ -13,13 +13,13 @@ import wisp
 import wisp/wisp_mist
 
 /// Default database path
-const default_db_path = "./data/formbase.db"
+const default_db_path = "./data/glyphbase.db"
 
 pub fn main() {
-  io.println("FormBase Server v0.1.0")
+  io.println("Glyphbase Server v0.1.0")
 
   // Get database path from environment or use default
-  let db_path = get_env_or_default("FORMBASE_DB_PATH", default_db_path)
+  let db_path = get_env_or_default("GLYPHBASE_DB_PATH", default_db_path)
   io.println("Database path: " <> db_path)
 
   // Open database connection

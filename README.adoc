@@ -2,16 +2,19 @@ image:https://img.shields.io/badge/License-PMPL--1.0-blue.svg[License: PMPL-1.0,
 // SPDX-License-Identifier: PMPL-1.0-or-later
 // SPDX-FileCopyrightText: 2025 hyperpolymath
 
-= FormBase
+= Glyphbase
 :toc:
 :toc-placement: preamble
 :toclevels: 3
 
-The open-source Airtable alternative that remembers everything.
+[.lead]
+*Carve your data in stone.*
 
-== What is FormBase?
+_The open-source Airtable alternative with permanence._
 
-FormBase is a spreadsheet-database hybrid built on link:https://github.com/hyperpolymath/formdb[Lithoglyph]. Unlike traditional spreadsheet tools, every change is tracked with who made it, when, and why.
+== What is Glyphbase?
+
+Glyphbase is a spreadsheet-database hybrid built on link:https://github.com/hyperpolymath/lithoglyph[Lithoglyph]. Unlike traditional spreadsheet tools, every change is carved in stone - tracked with who made it, when, and why - and fully reversible forever.
 
 === Key Features
 
@@ -43,8 +46,8 @@ FormBase is a spreadsheet-database hybrid built on link:https://github.com/hyper
 [source,bash]
 ----
 # Clone the repo
-git clone https://github.com/hyperpolymath/formbase
-cd formbase
+git clone https://github.com/hyperpolymath/glyphbase
+cd glyphbase
 
 # Start the server (requires Gleam and Lithoglyph)
 cd server && gleam run
@@ -122,7 +125,7 @@ Public or private forms for data collection, with automatic provenance.
 
 == Lithoglyph Superpowers
 
-These features are unique to FormBase because of the Lithoglyph backend:
+These features are unique to Glyphbase because of the Lithoglyph backend:
 
 === Provenance View
 Click any cell to see its complete history: who changed it, when, and their stated rationale.
@@ -165,7 +168,7 @@ Link records to canonical sources. DOI-linked records are immutable; edits creat
 
 [cols="1,1,1,1,1"]
 |===
-| Feature | Airtable | NocoDB | Baserow | *FormBase*
+| Feature | Airtable | NocoDB | Baserow | *Glyphbase*
 
 | Self-hosted
 | ❌

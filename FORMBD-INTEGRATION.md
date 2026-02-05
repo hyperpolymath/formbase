@@ -5,12 +5,12 @@
 
 ## Summary
 
-FormBase now successfully integrates with FormBD via Rustler NIF. All 9 NIF functions work correctly from both Erlang and Gleam.
+Glyphbase now successfully integrates with FormBD via Rustler NIF. All 9 NIF functions work correctly from both Erlang and Gleam.
 
 ## Test Results
 
 ```
-=== Lithoglyph NIF Test (FormBase) ===
+=== Lithoglyph NIF Test (Glyphbase) ===
 Test 1: Version {1,0,0} ✓
 Test 2: Database opened ✓
 Test 3: Transaction started ✓

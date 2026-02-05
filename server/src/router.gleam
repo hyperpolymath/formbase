@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: AGPL-3.0-or-later
-// HTTP router for FormBase API
+// HTTP router for Glyphbase API
 
 import formdb/client.{type Connection}
 import formdb/database
@@ -67,7 +67,7 @@ fn json_response(body: json.Json, status: Int) -> Response {
 fn home(_req: Request) -> Response {
   json_response(
     json.object([
-      #("name", json.string("FormBase")),
+      #("name", json.string("Glyphbase")),
       #("version", json.string("0.1.0")),
     ]),
     200,
