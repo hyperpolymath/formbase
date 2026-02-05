@@ -97,12 +97,58 @@ Import the Calendar CSS in your main application:
 import './styles/calendar.css';
 ```
 
-## Future Views
+## GalleryView
 
-### GalleryView (v0.3.0)
-- Card-based layout with images
-- Group by attachment field
-- Masonry or grid layout
+Card-based gallery view for displaying visual content with images and metadata.
+
+### Usage
+
+```rescript
+<GalleryView
+  tableId="table-123"
+  coverFieldId={Some("cover-image-field-id")}
+  rows={allRows}
+  fields={tableFields}
+  onCardClick={row => {
+    // Handle card click
+    Console.log(row.id)
+  }}
+  layout={Grid}
+/>
+```
+
+### Features
+
+- ✅ Grid and Masonry layouts
+- ✅ Cover image from Attachment or URL field
+- ✅ Card-based display with hover effects
+- ✅ Click to view full card details in modal
+- ✅ Primary field as card title
+- ✅ First 3 fields as card metadata
+- ✅ Placeholder for cards without images
+- ✅ Responsive design with mobile support
+- ✅ Full detail modal with all fields
+
+### Props
+
+| Prop | Type | Description |
+|------|------|-------------|
+| `tableId` | `string` | ID of the table being viewed |
+| `coverFieldId` | `option<string>` | Optional ID of Attachment or URL field for cover image |
+| `rows` | `array<row>` | Array of rows to display as cards |
+| `fields` | `array<fieldConfig>` | Array of field configurations |
+| `onCardClick` | `option<row => unit>` | Optional callback when card is clicked |
+| `layout` | `galleryLayout` | Grid or Masonry layout (default: Grid) |
+
+### Styling
+
+Import the Gallery CSS in your main application:
+
+```javascript
+import './styles/gallery.css';
+```
+
+## Future Views
 
 ### FormView (v0.3.0)
 - Public-facing form for data entry
