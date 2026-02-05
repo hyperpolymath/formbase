@@ -3,10 +3,10 @@
 
 (state
   (metadata
-    (version "0.2.0")
+    (version "0.3.0")
     (schema-version "1.0")
     (created "2026-01-11")
-    (updated "2026-02-05T12:30:00Z")
+    (updated "2026-02-05T14:00:00Z")
     (project "glyphbase")
     (repo "https://github.com/hyperpolymath/glyphbase")
     (formerly "formbase"))
@@ -23,12 +23,12 @@
       (realtime "Yjs" "WebSocket")))
 
   (current-position
-    (phase "deployment")
-    (overall-completion 70)
+    (phase "enhanced-views")
+    (overall-completion 75)
     (components
       (specification 100 "README, SPEC, ROADMAP, and SCM files complete")
       (ui-grid 95 "Grid with editing, sorting, filtering, multi-select, column hiding")
-      (ui-views 0 "Not started - v0.3.0 milestone")
+      (ui-views 50 "Kanban ✅ Calendar ✅ Gallery ⏳ Form ⏳")
       (backend-api 80 "Full REST router with CRUD handlers")
       (realtime 0 "Not started - v0.5.0 milestone")
       (automations 0 "Not started - v0.6.0 milestone")
@@ -58,7 +58,9 @@
        "docker-compose production stack"
        "Multi-arch container images (amd64, arm64)"
        "Automated release workflow to ghcr.io"
-       "Comprehensive installation guide (6 methods)")))
+       "Comprehensive installation guide (6 methods)"
+       "Kanban view with drag-and-drop (groups by Select/MultiSelect field)"
+       "Calendar view with month/week/day modes (displays Date field events)")))
 
   (route-to-mvp
     (milestone "Phase 0: Project Setup"
@@ -82,10 +84,10 @@
         ("FormDB provenance integration" . scaffolded)))
 
     (milestone "Phase 2: Views"
-      (status "not-started")
+      (status "in-progress")
       (items
-        ("Kanban view")
-        ("Calendar view")
+        ("Kanban view" . done)
+        ("Calendar view" . done)
         ("Gallery view")
         ("Form builder")))
 
@@ -195,4 +197,31 @@
         ("Implemented column hiding with HideFieldsPanel component")
         ("Hide fields panel shows all fields with visibility toggles")
         ("Hidden column count shown in toolbar badge")
-        ("Mutually exclusive panels (filter vs hide fields)")))))
+        ("Mutually exclusive panels (filter vs hide fields)"))))
+    (snapshot "2026-02-05"
+      (accomplishments
+        ("Completed Phase 2 (Deployment & Infrastructure)")
+        ("Created landing page at glyphbase.lithoglyph.org")
+        ("Set up GitHub Pages with custom domain")
+        ("Created Docker multi-stage builds (UI + Server)")
+        ("Created docker-compose production stack")
+        ("Created multi-arch container images (amd64, arm64)")
+        ("Created automated release workflow to ghcr.io")
+        ("Wrote comprehensive INSTALL.md with 6 methods")
+        ("Implemented KanbanView with drag-and-drop (180 lines)")
+        ("Created kanban.css with professional styling (155 lines)")
+        ("Created KanbanStore with API integration")
+        ("Kanban groups by Select/MultiSelect field")
+        ("Kanban shows card count badges and primary field titles")
+        ("Implemented CalendarView with month/week/day modes (253 lines)")
+        ("Created calendar.css with responsive design (240 lines)")
+        ("Created CalendarStore with date navigation and API helpers (150 lines)")
+        ("Calendar displays events on appropriate days from Date field")
+        ("Calendar shows up to 3 events per day with overflow indicator")
+        ("Calendar navigation (previous/next month, today button)")
+        ("Calendar highlights today with distinct styling")
+        ("Updated ROADMAP with v0.2.0 complete, v0.4.0 formal verification")
+        ("Updated ECOSYSTEM.scm with rescript-dom-mounter and Proven library")
+        ("Updated META.scm with ADR-005, ADR-006, ADR-007")
+        ("Updated STATE.scm to v0.3.0 (Enhanced Views) - 75% complete")
+        ("2 of 4 views complete: Kanban ✅ Calendar ✅")))))
