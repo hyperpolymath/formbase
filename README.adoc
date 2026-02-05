@@ -227,24 +227,31 @@ Link records to canonical sources. DOI-linked records are immutable; edits creat
 
 == Roadmap
 
-=== v0.1.0 - Core Grid _(Current)_
-* [ ] Create/delete bases and tables
-* [ ] Add/edit/delete rows
-* [ ] Core field types (text, number, date, select)
-* [ ] Sort, filter, hide columns
-* [ ] Keyboard navigation
+=== v0.1.0 - Core Grid ✓ _Complete_
+* [x] Create/delete bases and tables
+* [x] Add/edit/delete rows
+* [x] Core field types (text, number, date, select, checkbox)
+* [x] Sort, filter, hide columns
+* [x] Keyboard navigation
+* [x] Column resizing
+* [x] Search across all cells
+* [x] Undo/redo with full history
 
-=== v0.2.0 - Views
-* [ ] Kanban view
-* [ ] Calendar view
-* [ ] Gallery view
-* [ ] Form builder
+=== v0.2.0 - Views ✓ _Complete_
+* [x] Kanban view (drag-and-drop)
+* [x] Calendar view (month/week/day)
+* [x] Gallery view (grid/masonry)
+* [x] Form builder (public forms)
 
-=== v0.3.0 - Collaboration
-* [ ] Real-time cursors
-* [ ] Cell comments
-* [ ] Activity feed (from Lithoglyph provenance)
-* [ ] @mentions
+=== v0.3.0 - Backend Integration _(Current)_
+* [x] Idris2 ABI definitions (formal proofs)
+* [x] Zig FFI implementation (C-compatible)
+* [ ] Wire up Lithoglyph database
+* [ ] Provenance tracking integration
+* [ ] CBOR operation encoding
+* [ ] Real-time collaboration (WebSocket + Yjs)
+* [ ] Live cursors and presence
+* [ ] Cell comments and @mentions
 
 === v0.4.0 - Automations
 * [ ] Trigger/action system
@@ -287,6 +294,9 @@ Link records to canonical sources. DOI-linked records are immutable; edits creat
 
 | Database
 | Lithoglyph
+
+| ABI/FFI
+| link:server/ABI-FFI-README.md[Idris2 ABI + Zig FFI] (formal verification)
 
 | Auth
 | Magic link + OIDC
