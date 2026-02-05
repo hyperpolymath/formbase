@@ -11,7 +11,7 @@ The open-source Airtable alternative that remembers everything.
 
 == What is FormBase?
 
-FormBase is a spreadsheet-database hybrid built on link:https://github.com/hyperpolymath/formdb[FormDB]. Unlike traditional spreadsheet tools, every change is tracked with who made it, when, and why.
+FormBase is a spreadsheet-database hybrid built on link:https://github.com/hyperpolymath/formdb[Lithoglyph]. Unlike traditional spreadsheet tools, every change is tracked with who made it, when, and why.
 
 === Key Features
 
@@ -46,7 +46,7 @@ FormBase is a spreadsheet-database hybrid built on link:https://github.com/hyper
 git clone https://github.com/hyperpolymath/formbase
 cd formbase
 
-# Start the server (requires Gleam and FormDB)
+# Start the server (requires Gleam and Lithoglyph)
 cd server && gleam run
 
 # Start the UI (requires Deno)
@@ -73,7 +73,7 @@ _Coming soon_
 │  API Server (Gleam on BEAM)                                 │
 │  REST + WebSocket + Automations                             │
 ├─────────────────────────────────────────────────────────────┤
-│  FormDB Engine                                              │
+│  Lithoglyph Engine                                              │
 │  Provenance | Reversibility | PROMPT Scores                 │
 ├─────────────────────────────────────────────────────────────┤
 │  Storage: Local | Dropbox | GDrive | S3                     │
@@ -120,9 +120,9 @@ Public or private forms for data collection, with automatic provenance.
 | Barcode | ▮▮▮ | QR codes, barcodes
 |===
 
-== FormDB Superpowers
+== Lithoglyph Superpowers
 
-These features are unique to FormBase because of the FormDB backend:
+These features are unique to FormBase because of the Lithoglyph backend:
 
 === Provenance View
 Click any cell to see its complete history: who changed it, when, and their stated rationale.
@@ -234,7 +234,7 @@ Link records to canonical sources. DOI-linked records are immutable; edits creat
 === v0.3.0 - Collaboration
 * [ ] Real-time cursors
 * [ ] Cell comments
-* [ ] Activity feed (from FormDB provenance)
+* [ ] Activity feed (from Lithoglyph provenance)
 * [ ] @mentions
 
 === v0.4.0 - Automations
@@ -243,7 +243,7 @@ Link records to canonical sources. DOI-linked records are immutable; edits creat
 * [ ] Email notifications
 * [ ] Scheduled tasks
 
-=== v0.5.0 - FormDB Superpowers
+=== v0.5.0 - Lithoglyph Superpowers
 * [ ] Provenance view
 * [ ] Time travel UI
 * [ ] PROMPT scoring
@@ -271,7 +271,7 @@ Link records to canonical sources. DOI-linked records are immutable; edits creat
 | Gleam on BEAM
 
 | Database
-| FormDB
+| Lithoglyph
 
 | Auth
 | Magic link + OIDC
@@ -282,12 +282,12 @@ Link records to canonical sources. DOI-linked records are immutable; edits creat
 
 == Related Projects
 
-* link:https://github.com/hyperpolymath/formdb[FormDB] - The narrative-first database engine
-* link:https://github.com/hyperpolymath/fqldt[FQLdt] - Dependently-typed query language
-* link:https://github.com/hyperpolymath/formdb-studio[FormDB Studio] - Admin GUI for FormDB
-* link:https://github.com/hyperpolymath/formdb-debugger[FormDB Debugger] - Proof-carrying recovery tool
+* link:https://github.com/hyperpolymath/formdb[Lithoglyph] - The narrative-first database engine
+* link:https://github.com/hyperpolymath/fqldt[GQLdt] - Dependently-typed query language
+* link:https://github.com/hyperpolymath/formdb-studio[Lithoglyph Studio] - Admin GUI for Lithoglyph
+* link:https://github.com/hyperpolymath/formdb-debugger[Lithoglyph Debugger] - Proof-carrying recovery tool
 * link:https://github.com/hyperpolymath/bofig[BoFIG] - Evidence graph for journalism
-* link:https://github.com/hyperpolymath/zotero-formdb[Zotero-FormDB] - Reference manager
+* link:https://github.com/hyperpolymath/zotero-formdb[Zotero-Lithoglyph] - Reference manager
 
 == License
 

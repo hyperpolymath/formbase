@@ -92,6 +92,8 @@ fn format_error(error: client.FormDBError) -> String {
     client.NotFound(entity, id) -> entity <> " not found: " <> id
     client.PermissionDenied(action) -> "Permission denied: " <> action
     client.NifNotLoaded -> "NIF not loaded"
+    client.ParseFailed -> "CBOR parse failed"
+    client.InvalidHandle -> "Invalid handle"
   }
 }
 

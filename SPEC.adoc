@@ -5,13 +5,13 @@
 :toclevels: 4
 :sectnums:
 
-Technical specification for FormBase, the open-source Airtable alternative built on FormDB.
+Technical specification for FormBase, the open-source Airtable alternative built on Lithoglyph.
 
 == Overview
 
 === Purpose
 
-FormBase provides a spreadsheet-like interface for non-technical users to work with structured data, while leveraging FormDB's unique capabilities: provenance tracking, reversibility proofs, and PROMPT quality scores.
+FormBase provides a spreadsheet-like interface for non-technical users to work with structured data, while leveraging Lithoglyph's unique capabilities: provenance tracking, reversibility proofs, and PROMPT quality scores.
 
 === Design Principles
 
@@ -132,7 +132,7 @@ type FieldType =
   | 'created_by'
   | 'modified_by'
   | 'autonumber'
-  | 'prompt_score';          // FormDB-specific
+  | 'prompt_score';          // Lithoglyph-specific
 ----
 
 === Row (Record)
@@ -146,7 +146,7 @@ interface Row {
   table: TableId;
   cells: Map<FieldId, Cell>;
 
-  // FormDB provenance (automatic)
+  // Lithoglyph provenance (automatic)
   created_at: Timestamp;
   created_by: ActorId;
   created_rationale: string;
@@ -158,7 +158,7 @@ interface Cell {
   field: FieldId;
   value: Value;
 
-  // FormDB provenance (automatic)
+  // Lithoglyph provenance (automatic)
   modified_at: Timestamp;
   modified_by: ActorId;
   modified_rationale: string | null;
@@ -377,7 +377,7 @@ interface LookupOptions {
 }
 ----
 
-=== PROMPT Score (FormDB-specific)
+=== PROMPT Score (Lithoglyph-specific)
 
 Evidence quality rating on six dimensions.
 
@@ -675,7 +675,7 @@ GET    /api/views/:id
 PATCH  /api/views/:id
 DELETE /api/views/:id
 
-# FormDB-specific
+# Lithoglyph-specific
 GET    /api/rows/:id/provenance
 GET    /api/tables/:table/history?at=:timestamp
 GET    /api/rows/:id/prompt-scores
@@ -744,7 +744,7 @@ interface Comment {
 }
 ----
 
-== FormDB Integration
+== Lithoglyph Integration
 
 === Provenance
 

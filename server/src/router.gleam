@@ -554,6 +554,8 @@ fn error_response(error: client.FormDBError) -> Response {
     client.NotFound(entity, id) -> entity <> " not found: " <> id
     client.PermissionDenied(action) -> "Permission denied: " <> action
     client.NifNotLoaded -> "Database NIF not loaded"
+    client.ParseFailed -> "Failed to parse CBOR data"
+    client.InvalidHandle -> "Invalid database or transaction handle"
   }
   json_response(json.object([#("error", json.string(message))]), 500)
 }
