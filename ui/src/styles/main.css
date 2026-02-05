@@ -4,6 +4,7 @@
 @import './kanban.css';
 @import './calendar.css';
 @import './gallery.css';
+@import './form.css';
 
 :root {
   --color-bg: #ffffff;

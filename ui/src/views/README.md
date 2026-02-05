@@ -148,9 +148,62 @@ Import the Gallery CSS in your main application:
 import './styles/gallery.css';
 ```
 
-## Future Views
+## FormView
 
-### FormView (v0.3.0)
-- Public-facing form for data entry
-- Field validation
-- Success message customization
+Public-facing form view for data entry with validation and success handling.
+
+### Usage
+
+```rescript
+<FormView
+  tableId="table-123"
+  fields={visibleFields}
+  config={{
+    title: "Contact Form",
+    description: Some("Get in touch with us"),
+    submitButtonText: "Send Message",
+    successMessage: "Thank you! We'll be in touch soon.",
+    redirectUrl: Some("https://example.com/thank-you"),
+  }}
+  onSubmit={async formData => {
+    // Handle form submission
+    let result = await API.createRow(tableId, formData)
+    result
+  }}
+  showFieldLabels={true}
+  showRequiredIndicator={true}
+/>
+```
+
+### Features
+
+- ✅ Clean, centered form layout with gradient background
+- ✅ Support for all common field types (Text, Number, Email, URL, Date, Checkbox, Select)
+- ✅ Required field validation with asterisk indicators
+- ✅ Email and URL format validation
+- ✅ Real-time field error messages
+- ✅ Form-level error banner
+- ✅ Animated success state with checkmark
+- ✅ Optional redirect after success
+- ✅ Disabled submit button during submission
+- ✅ Responsive design with mobile-first approach
+- ✅ Accessible form controls
+
+### Props
+
+| Prop | Type | Description |
+|------|------|-------------|
+| `tableId` | `string` | ID of the table to submit data to |
+| `fields` | `array<fieldConfig>` | Array of fields to display in form |
+| `config` | `formConfig` | Form configuration (title, description, messages) |
+| `onSubmit` | `Dict.t<cellValue> => promise<result<string, string>>` | Async callback to handle form submission |
+| `showFieldLabels` | `bool` | Show field labels (default: true) |
+| `showRequiredIndicator` | `bool` | Show asterisk for required fields (default: true) |
+
+### Styling
+
+Import the Form CSS in your main application:
+
+```javascript
+import './styles/form.css';
+```
