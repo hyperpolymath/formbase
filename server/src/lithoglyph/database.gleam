@@ -1,8 +1,8 @@
 // SPDX-License-Identifier: AGPL-3.0-or-later
 // FormDB database connection manager
 
-import formdb/client.{type Connection, ReadOnly, ReadWrite}
-import formdb/operations.{type Operation, encode_operation}
+import lithoglyph/client.{type Connection, ReadOnly, ReadWrite}
+import lithoglyph/operations.{type Operation, encode_operation}
 import gleam/option.{type Option, None, Some}
 
 /// Database state

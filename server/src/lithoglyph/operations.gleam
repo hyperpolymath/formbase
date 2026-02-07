@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: AGPL-3.0-or-later
 // FormDB operation types and CBOR encoding
 
-import formdb/cbor
+import lithoglyph/cbor
 import gleam/list
 import gleam/option.{type Option}
 import types.{

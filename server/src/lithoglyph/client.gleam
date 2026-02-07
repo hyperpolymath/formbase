@@ -4,7 +4,7 @@
 import gleam/option.{type Option, None}
 import gleam/bit_array
 import gleam/dynamic
-import formdb/nif_ffi
+import lithoglyph/nif_ffi
 
 /// FormDB database handle (opaque reference from NIF)
 pub opaque type Connection {

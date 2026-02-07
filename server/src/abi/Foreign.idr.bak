@@ -1,5 +1,5 @@
 -- SPDX-License-Identifier: PMPL-1.0-or-later
--- Lithoglyph ABI Foreign Function Interface Declarations
+-- FormDB ABI Foreign Function Interface Declarations
 --
 -- This module declares the C-compatible FFI functions that will be
 -- implemented in Zig. All functions use the C calling convention and
@@ -18,7 +18,7 @@ import Data.Buffer
 -- These will be implemented in ffi/zig/src/main.zig
 
 -- Get NIF version (major, minor, patch)
-%foreign "C:lithoglyph_nif_version, liblithoglyph_nif"
+%foreign "C:formdb_nif_version, libformdb_nif"
 prim__nif_version : PrimIO (Bits8, Bits8, Bits8)
 
 export
@@ -29,7 +29,7 @@ nifVersion = do
 
 -- Open database connection
 -- Returns NULL on error (checked by constructor proof)
-%foreign "C:lithoglyph_nif_db_open, liblithoglyph_nif"
+%foreign "C:formdb_nif_db_open, libformdb_nif"
 prim__db_open : String -> PrimIO Bits64
 
 export
@@ -43,7 +43,7 @@ dbOpen (MkDbPath pathStr) = do
            No _ => pure $ Error "Null pointer returned"
 
 -- Close database connection
-%foreign "C:lithoglyph_nif_db_close, liblithoglyph_nif"
+%foreign "C:formdb_nif_db_close, libformdb_nif"
 prim__db_close : Bits64 -> PrimIO Int
 
 export
@@ -56,7 +56,7 @@ dbClose handle = do
 
 -- Begin transaction
 -- mode: 0 = ReadOnly, 1 = ReadWrite
-%foreign "C:lithoglyph_nif_txn_begin, liblithoglyph_nif"
+%foreign "C:formdb_nif_txn_begin, libformdb_nif"
 prim__txn_begin : Bits64 -> Bits32 -> PrimIO Bits64
 
 export
@@ -71,7 +71,7 @@ txnBegin db mode = do
            No _ => pure $ Error "Null pointer returned"
 
 -- Commit transaction
-%foreign "C:lithoglyph_nif_txn_commit, liblithoglyph_nif"
+%foreign "C:formdb_nif_txn_commit, libformdb_nif"
 prim__txn_commit : Bits64 -> PrimIO Int
 
 export
@@ -83,7 +83,7 @@ txnCommit txn = do
     else pure $ Error "Failed to commit transaction"
 
 -- Abort transaction
-%foreign "C:lithoglyph_nif_txn_abort, liblithoglyph_nif"
+%foreign "C:formdb_nif_txn_abort, libformdb_nif"
 prim__txn_abort : Bits64 -> PrimIO Int
 
 export
@@ -98,7 +98,7 @@ txnAbort txn = do
 -- Returns block ID and optional provenance hash
 -- Input: transaction handle, operation CBOR bytes, operation length
 -- Output: block_id (u64), has_provenance (bool), provenance_hash (32 bytes if present)
-%foreign "C:lithoglyph_nif_apply, liblithoglyph_nif"
+%foreign "C:formdb_nif_apply, libformdb_nif"
 prim__apply : Bits64 -> Buffer -> Bits32 -> Bits64 -> Bits32 -> Buffer -> PrimIO Int
 
 export
@@ -139,7 +139,7 @@ applyOperation txn (MkOperationData bytes len) = do
 
 -- Get database schema (CBOR-encoded)
 -- Returns: length (u32), data buffer
-%foreign "C:lithoglyph_nif_schema, liblithoglyph_nif"
+%foreign "C:formdb_nif_schema, libformdb_nif"
 prim__schema : Bits64 -> Buffer -> Bits32 -> PrimIO Bits32
 
 export
@@ -160,7 +160,7 @@ getSchema db = do
 
 -- Get journal entries since timestamp
 -- Returns: length (u32), data buffer (CBOR-encoded array)
-%foreign "C:lithoglyph_nif_journal, liblithoglyph_nif"
+%foreign "C:formdb_nif_journal, libformdb_nif"
 prim__journal : Bits64 -> Bits64 -> Buffer -> Bits32 -> PrimIO Bits32
 
 export

@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: PMPL-1.0-or-later
-// Lithoglyph Client Integration Test - M10 PoC
+// FormDB Client Integration Test - M10 PoC
 
-import lithoglyph/client
+import formdb/client
 import gleam/io
 import gleam/string
 import gleeunit
@@ -11,7 +11,7 @@ pub fn main() {
 }
 
 pub fn version_test() {
-  io.println("\n=== Lithoglyph Client NIF Test ===\n")
+  io.println("\n=== FormDB Client NIF Test ===\n")
 
   // Test 1: Version
   io.println("Test 1: Getting version...")
@@ -28,7 +28,7 @@ pub fn version_test() {
 pub fn connection_test() {
   // Test 2: Open connection
   io.println("Test 2: Opening database connection...")
-  case client.connect("/tmp/lithoglyph_test") {
+  case client.connect("/tmp/formbd_test") {
     Ok(conn) -> {
       io.println("  ✓ Connection opened\n")
 
@@ -78,7 +78,7 @@ pub fn connection_test() {
 pub fn transaction_test() {
   io.println("Test 6: Transaction flow...")
 
-  case client.connect("/tmp/lithoglyph_test") {
+  case client.connect("/tmp/formbd_test") {
     Ok(conn) -> {
       // Test 6a: Begin transaction
       io.println("  6a: Beginning transaction...")
@@ -131,7 +131,7 @@ pub fn transaction_test() {
 pub fn with_transaction_test() {
   io.println("Test 7: High-level with_transaction...")
 
-  case client.connect("/tmp/lithoglyph_test") {
+  case client.connect("/tmp/formbd_test") {
     Ok(conn) -> {
       // Use the high-level with_transaction helper
       case

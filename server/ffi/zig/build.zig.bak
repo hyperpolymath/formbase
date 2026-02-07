@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: PMPL-1.0-or-later
-// Build script for Lithoglyph Zig FFI NIF library (Zig 0.15.2+)
+// Build script for FormDB Zig FFI NIF library (Zig 0.15.2+)
 
 const std = @import("std");
 
@@ -19,7 +19,7 @@ pub fn build(b: *std.Build) void {
 
     // Build shared library for Erlang NIF
     const lib = b.addLibrary(.{
-        .name = "lithoglyph_nif",
+        .name = "formdb_nif",
         .linkage = .dynamic,
         .root_module = b.createModule(.{
             .root_source_file = b.path("src/main.zig"),
@@ -36,7 +36,7 @@ pub fn build(b: *std.Build) void {
     // To link statically, uncomment:
     // const lithoglyph_path = ...;
     // lib.addLibraryPath(.{ .cwd_relative = lithoglyph_path ++ "/zig-out/lib" });
-    // lib.linkSystemLibrary("lithoglyph");
+    // lib.linkSystemLibrary("formdb");
 
     // Install to priv directory for Erlang to find
     const install_artifact = b.addInstallArtifact(lib, .{

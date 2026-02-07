@@ -1,9 +1,9 @@
 // SPDX-License-Identifier: AGPL-3.0-or-later
 // HTTP router for Glyphbase API
 
-import formdb/client.{type Connection}
-import formdb/database
-import formdb/operations
+import lithoglyph/client.{type Connection}
+import lithoglyph/database
+import lithoglyph/operations
 import gleam/dynamic/decode
 import gleam/http.{Delete, Get, Patch, Post}
 import gleam/int

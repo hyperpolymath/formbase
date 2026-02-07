@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: PMPL-1.0-or-later
-// Lithoglyph BEAM NIF - Rust/Rustler implementation
+// FormDB BEAM NIF - Rust/Rustler implementation
 //
-// This NIF connects BEAM (Erlang/Gleam/Elixir) to Lithoglyph via the Lithoglyph C ABI.
+// This NIF connects BEAM (Erlang/Gleam/Elixir) to FormDB via the FormBD C ABI.
 // Uses CBOR-encoded binaries for efficient data transfer.
 
 use rustler::{Encoder, Env, Error, ResourceArc, Term};
@@ -40,7 +40,7 @@ enum TxnMode {
 
 // NIF functions
 rustler::init!(
-    "lithoglyph_nif",
+    "formdb_nif",
     [
         version,
         db_open,
@@ -61,13 +61,13 @@ fn load(env: Env, _info: Term) -> bool {
     true
 }
 
-/// Get Lithoglyph version
+/// Get FormDB version
 #[rustler::nif]
 fn version() -> (i32, i32, i32) {
     (1, 0, 0) // v1.0.0 for M10
 }
 
-/// Open a Lithoglyph database
+/// Open a FormDB database
 #[rustler::nif]
 fn db_open(path: String) -> ResourceArc<DbHandle> {
     let db = DbHandle {
@@ -78,7 +78,7 @@ fn db_open(path: String) -> ResourceArc<DbHandle> {
     ResourceArc::new(db)
 }
 
-/// Close a Lithoglyph database
+/// Close a FormDB database
 #[rustler::nif]
 fn db_close(_db: ResourceArc<DbHandle>) -> rustler::Atom {
     // M10 PoC: no cleanup needed for stub

@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: PMPL-1.0-or-later
-// Lithoglyph NIF Implementation in Zig
+// FormDB NIF Implementation in Zig
 //
 // This implements the C-compatible ABI defined in ../../../src/abi/Foreign.idr
 // All functions follow the memory layout guarantees from ../../../src/abi/Layout.idr
@@ -122,8 +122,8 @@ const allocator = gpa.allocator();
 // ============================================================================
 
 /// Get NIF version
-export fn lithoglyph_nif_version(major: *u8, minor: *u8, patch: *u8) void {
-    // Lithoglyph NIF version 0.1.0
+export fn formdb_nif_version(major: *u8, minor: *u8, patch: *u8) void {
+    // FormDB NIF version 0.1.0
     major.* = 0;
     minor.* = 1;
     patch.* = 0;
@@ -131,7 +131,7 @@ export fn lithoglyph_nif_version(major: *u8, minor: *u8, patch: *u8) void {
 
 /// Open database connection
 /// Returns: DbHandle pointer or NULL on error
-export fn lithoglyph_nif_db_open(path: [*:0]const u8) ?*DbHandle {
+export fn formdb_nif_db_open(path: [*:0]const u8) ?*DbHandle {
     const path_slice = std.mem.span(path);
 
     var out_db: ?*FdbDb = null;
@@ -159,7 +159,7 @@ export fn lithoglyph_nif_db_open(path: [*:0]const u8) ?*DbHandle {
 
 /// Close database connection
 /// Returns: 0 on success, -1 on error
-export fn lithoglyph_nif_db_close(handle: *DbHandle) c_int {
+export fn formdb_nif_db_close(handle: *DbHandle) c_int {
     const status = fdb_db_close(handle);
     return if (status == .ok) 0 else -1;
 }
@@ -167,7 +167,7 @@ export fn lithoglyph_nif_db_close(handle: *DbHandle) c_int {
 /// Begin transaction
 /// mode: 0 = ReadOnly, 1 = ReadWrite
 /// Returns: TxnHandle pointer or NULL on error
-export fn lithoglyph_nif_txn_begin(handle: *DbHandle, mode_int: u32) ?*TxnHandle {
+export fn formdb_nif_txn_begin(handle: *DbHandle, mode_int: u32) ?*TxnHandle {
     const mode: FdbTxnMode = if (mode_int == 0) .read_only else .read_write;
 
     var out_txn: ?*FdbTxn = null;
@@ -192,7 +192,7 @@ export fn lithoglyph_nif_txn_begin(handle: *DbHandle, mode_int: u32) ?*TxnHandle
 
 /// Commit transaction
 /// Returns: 0 on success, -1 on error
-export fn lithoglyph_nif_txn_commit(handle: *TxnHandle) c_int {
+export fn formdb_nif_txn_commit(handle: *TxnHandle) c_int {
     var out_err: FdbBlob = undefined;
     const status = fdb_txn_commit(handle, &out_err);
 
@@ -208,7 +208,7 @@ export fn lithoglyph_nif_txn_commit(handle: *TxnHandle) c_int {
 
 /// Abort transaction
 /// Returns: 0 on success, -1 on error
-export fn lithoglyph_nif_txn_abort(handle: *TxnHandle) c_int {
+export fn formdb_nif_txn_abort(handle: *TxnHandle) c_int {
     const status = fdb_txn_abort(handle);
     return if (status == .ok) 0 else -1;
 }
@@ -217,7 +217,7 @@ export fn lithoglyph_nif_txn_abort(handle: *TxnHandle) c_int {
 /// Input: transaction handle, operation CBOR buffer, operation length
 /// Output: block_id (u64), has_provenance (bool/u32), provenance_hash (32 bytes)
 /// Returns: 0 on success, -1 on error
-export fn lithoglyph_nif_apply(
+export fn formdb_nif_apply(
     handle: *TxnHandle,
     op_buffer: [*]const u8,
     op_length: u32,
@@ -269,7 +269,7 @@ export fn lithoglyph_nif_apply(
 /// Get database schema (CBOR-encoded)
 /// Input: database handle, output buffer, max buffer size
 /// Returns: actual data length, or 0 on error
-export fn lithoglyph_nif_schema(
+export fn formdb_nif_schema(
     handle: *DbHandle,
     buffer: [*]u8,
     max_size: u32,
@@ -294,7 +294,7 @@ export fn lithoglyph_nif_schema(
 /// Get journal entries since timestamp
 /// Input: database handle, since timestamp, output buffer, max buffer size
 /// Returns: actual data length, or 0 on error
-export fn lithoglyph_nif_journal(
+export fn formdb_nif_journal(
     handle: *DbHandle,
     since: u64,
     buffer: [*]u8,
@@ -344,7 +344,7 @@ fn nif_version(env: ?*c.ErlNifEnv, argc: c_int, argv: [*c]const c.ERL_NIF_TERM) 
     var minor: u8 = undefined;
     var patch: u8 = undefined;
 
-    lithoglyph_nif_version(&major, &minor, &patch);
+    formdb_nif_version(&major, &minor, &patch);
 
     return c.enif_make_tuple3(
         env,
@@ -369,7 +369,7 @@ fn nif_db_open(env: ?*c.ErlNifEnv, argc: c_int, argv: [*c]const c.ERL_NIF_TERM) 
     @memcpy(path_buf[0..path_len], path_binary.data[0..path_len]);
     path_buf[path_len] = 0; // Null terminate
 
-    const handle = lithoglyph_nif_db_open(@ptrCast(&path_buf));
+    const handle = formdb_nif_db_open(@ptrCast(&path_buf));
 
     if (handle) |h| {
         // TODO: Create resource term for handle
@@ -451,10 +451,10 @@ fn nif_unload(env: ?*c.ErlNifEnv, priv_data: ?*anyopaque) callconv(.c) void {
 }
 
 // NIF entry point
-export const lithoglyph_nif_entry = c.ErlNifEntry{
+export const formdb_nif_entry = c.ErlNifEntry{
     .major = c.ERL_NIF_MAJOR_VERSION,
     .minor = c.ERL_NIF_MINOR_VERSION,
-    .name = "lithoglyph_nif",
+    .name = "formdb_nif",
     .num_of_funcs = nif_funcs.len,
     .funcs = @ptrCast(@constCast(&nif_funcs)),
     .load = nif_load,
@@ -472,7 +472,7 @@ test "version" {
     var minor: u8 = undefined;
     var patch: u8 = undefined;
 
-    lithoglyph_nif_version(&major, &minor, &patch);
+    formdb_nif_version(&major, &minor, &patch);
 
     try std.testing.expectEqual(@as(u8, 0), major);
     try std.testing.expectEqual(@as(u8, 1), minor);
@@ -480,9 +480,9 @@ test "version" {
 }
 
 test "db lifecycle" {
-    const handle = lithoglyph_nif_db_open("/tmp/test.db");
+    const handle = formdb_nif_db_open("/tmp/test.db");
     try std.testing.expect(handle != null);
 
-    const result = lithoglyph_nif_db_close(handle.?);
+    const result = formdb_nif_db_close(handle.?);
     try std.testing.expectEqual(@as(c_int, 0), result);
 }

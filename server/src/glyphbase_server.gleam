@@ -2,7 +2,7 @@
 // Glyphbase API Server
 
 import envoy
-import formdb/client
+import lithoglyph/client
 import gleam/erlang/process
 import gleam/http
 import gleam/int
