@@ -134,6 +134,7 @@ public export
 0 roundUpDivisible : (size : Nat) -> (align : Nat) ->
                       {auto 0 alignNonZero : So (align > 0)} ->
                       (roundUp size align `mod` align = 0)
+-- PROOF_TODO: Replace believe_me with actual proof
 roundUpDivisible size align = believe_me ()  -- TODO: formal proof
 
 -- Calculate offset of next field after current field
